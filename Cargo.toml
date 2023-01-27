@@ -1,0 +1,11 @@
+[package]
+name = "isg_4real"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.68"
+inquire = "0.5.3"
+opencv = "0.75.0"
