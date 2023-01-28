@@ -4,7 +4,7 @@ use anyhow;
 use anyhow::Error; //anyhow::Error::msg("My err");
 use opencv::prelude::*;
 use opencv::highgui::{self, WINDOW_FULLSCREEN};
-use opencv::core::{Mat, Vector, Size, CV_8UC3,};
+use opencv::core::{Mat, Vector, VecN, Size, CV_8UC3,};
 use opencv::imgcodecs::{imread, imwrite, IMREAD_COLOR};
 use opencv::videoio::{VideoWriter, VideoCapture, CAP_ANY};
 
@@ -75,37 +75,30 @@ fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
     return Ok(());
 }
 
-// //Returns average value of the pixel given size and location
-// fn get_pixel(frame: &mut EmbedSource, x: i32, y: i32) -> Option<()> {
-//     if frame.size % 2 != 1 {
-//         panic!("Used even size for pixels, please choose something odd");
-//     }
+//Returns average value of the pixel given size and location
+fn get_pixel(frame: &mut EmbedSource, x: i32, y: i32) -> Option<()> {
+    if frame.size % 2 != 1 {
+        panic!("Used even size for pixels, please choose something odd");
+    }
 
-//     let half_size = frame.size/2;
+    let half_size = frame.size/2;
     
-//     let mut r_list: Vec<u8> = Vec::new();
-//     let mut g_list: Vec<u8> = Vec::new();
-//     let mut b_list: Vec<u8> = Vec::new();
+    let mut r_list: Vec<u8> = Vec::new();
+    let mut g_list: Vec<u8> = Vec::new();
+    let mut b_list: Vec<u8> = Vec::new();
 
-//     for i in -half_size..half_size+1 {
-//         for j in -half_size..half_size+1 {
-//             let bgr: &VecN<u8, 3> = frame.image.at_2d::<opencv::core::Vec3b>(y+i, x+j).unwrap();
-//             //could reduce size of integers ?
-//             r_list.push(bgr[2]);
-//             g_list.push(bgr[1]);
-//             b_list.push(bgr[0]);
-//         }
-//     }
-
-//     let rgb_average: u8 = vec![
-//         r_list.iter().sum() / r_list.len(),
-//         g_list.iter().sum() / g_list.len(),
-//         b_list.iter().sum() / b_list.len(),
-//     ];
-
-//     // return Some(rgb_average);
-//     return None;
-// }
+    for i in -half_size..half_size+1 {
+        for j in -half_size..half_size+1 {
+            let bgr: &VecN<u8, 3> = frame.image.at_2d::<opencv::core::Vec3b>(y+i, x+j).unwrap();
+            //could reduce size of integers ?
+            r_list.push(bgr[2]);
+            g_list.push(bgr[1]);
+            b_list.push(bgr[0]);
+        }
+    }
+    // return Some(rgb_average);
+    return None;
+}
 
 //Draws the pixels, exists so you can draw bigger blocks
 fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::Result<()> {
@@ -183,6 +176,9 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
     return Ok(());
 }
 
+fn read_frame() {
+
+}
 /*
 Instructions:
 Etched on first frame, always be wrtten in binary despite output mode
@@ -230,6 +226,10 @@ fn etch_instructions(settings: &Settings, data: &Data)
     imwrite("src/out/test1.png", &source.image, &Vector::new())?;
 
     return Ok(source);
+}
+
+fn read_instructions() {
+
 }
 
 pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
