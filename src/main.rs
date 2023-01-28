@@ -3,8 +3,10 @@ mod etcher;
 mod settings;
 mod embedsource;
 
+use etcher::read_frame;
 use settings::{Data, Settings};
 
+//Make RGB a struct
 //Make it calculate how much data is jammed in 1 frame for user
 fn main() -> anyhow::Result<()> {
     // ui::summon_gooey();
@@ -14,7 +16,8 @@ fn main() -> anyhow::Result<()> {
 
     let settings = Settings::new(1, 30, 640, 360);
 
-    etcher::etch("src/out/output.avi", data, settings)?;
+    read_frame();
+    // etcher::etch("src/out/output.avi", data, settings)?;
 
     return Ok(());
 }

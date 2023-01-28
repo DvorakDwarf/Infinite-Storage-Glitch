@@ -76,7 +76,7 @@ fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
 }
 
 //Returns average value of the pixel given size and location
-fn get_pixel(frame: &mut EmbedSource, x: i32, y: i32) -> Option<()> {
+fn get_pixel(frame: &EmbedSource, x: i32, y: i32) -> Option<Vec<u8>> {
     if frame.size % 2 != 1 {
         panic!("Used even size for pixels, please choose something odd");
     }
@@ -89,15 +89,31 @@ fn get_pixel(frame: &mut EmbedSource, x: i32, y: i32) -> Option<()> {
 
     for i in -half_size..half_size+1 {
         for j in -half_size..half_size+1 {
-            let bgr: &VecN<u8, 3> = frame.image.at_2d::<opencv::core::Vec3b>(y+i, x+j).unwrap();
+            let bgr = frame.image.at_2d::<opencv::core::Vec3b>(y+i, x+j).unwrap();
             //could reduce size of integers ?
             r_list.push(bgr[2]);
             g_list.push(bgr[1]);
             b_list.push(bgr[0]);
         }
     }
-    // return Some(rgb_average);
-    return None;
+
+    //A hacked on solution, do better
+    let r_sum: usize = r_list.iter().map(|&x| x as usize).sum();
+    let r_average = r_sum / r_list.len(); 
+    let g_sum: usize = g_list.iter().map(|&x| x as usize).sum();
+    let g_average = g_sum / g_list.len(); 
+    let b_sum: usize = b_list.iter().map(|&x| x as usize).sum();
+    let b_average = b_sum / b_list.len();
+    
+    //Potentially unnecessary conversion
+    let rgb_average = vec![
+        r_average as u8,
+        g_average as u8,
+        b_average as u8
+    ];
+    dbg!(&rgb_average);
+    
+    return Some(rgb_average);
 }
 
 //Draws the pixels, exists so you can draw bigger blocks
@@ -176,8 +192,49 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
     return Ok(());
 }
 
-fn read_frame() {
+pub fn read_frame(source: &EmbedSource, out_mode: &OutputMode) {
+    let size = source.size as usize;
+    let half_size = (source.size/2) as i32;
+    let width = source.width;
+    let height = source.height;
 
+    //Fix this nesting spiral
+    match out_mode {
+        OutputMode::Color => {
+            let mut byte_data: Vec<u8> = Vec::new();
+            for y in (half_size..height).step_by(size) {
+                for x in (half_size..width).step_by(size) {
+                    let rgb = get_pixel(&source, x, y);
+                    if rgb == None {
+                        continue;
+                    } else {
+                        let rgb = rgb.unwrap();
+                        byte_data.push(rgb[0]);
+                        byte_data.push(rgb[1]);
+                        byte_data.push(rgb[2]);
+                    }
+                }
+            }
+        },
+        OutputMode::Binary => {
+            let mut binary_data: Vec<bool> = Vec::new();
+            for y in (half_size..height).step_by(size) {
+                for x in (half_size..width).step_by(size) {
+                    let rgb = get_pixel(&source, x, y);
+                    if rgb == None {
+                        continue;
+                    } else {
+                        let rgb = rgb.unwrap();
+                        if rgb[0] == 255 {
+                            binary_data.push(true);
+                        } else {
+                            binary_data.push(false);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 /*
 Instructions:
