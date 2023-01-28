@@ -11,7 +11,15 @@ pub struct Data {
 }
 
 impl Data {
-    pub fn from_binary(binary: Vec<bool>) -> Data{
+    pub fn new_out_mode(out_mode: OutputMode) -> Data {
+        Data {
+            bytes: Vec::new(),
+            binary: Vec::new(),
+            out_mode
+        }
+    }
+
+    pub fn from_binary(binary: Vec<bool>) -> Data {
         Data {
             bytes: Vec::new(),
             binary,
@@ -38,11 +46,11 @@ pub struct Settings {
 impl Settings {
     pub fn new(size: i32, fps: i32, width: i32, height: i32,) 
             -> Settings {
-            Settings {
-                size,
-                fps: fps as f64,
-                height, 
-                width
-            }
+        Settings {
+            size,
+            fps: fps as f64,
+            height, 
+            width
+        }
     }
 }

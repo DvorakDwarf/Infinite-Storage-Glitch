@@ -8,7 +8,7 @@ use opencv::core::{Mat, Vector, VecN, Size, CV_8UC3,};
 use opencv::imgcodecs::{imread, imwrite, IMREAD_COLOR};
 use opencv::videoio::{VideoWriter, VideoCapture, CAP_ANY};
 
-use crate::settings::{Settings, OutputMode, Data};
+use crate::settings::{Settings, OutputMode, Data, self};
 use crate::embedsource::EmbedSource;
 
 //Get and write bytes from and to files. Start and end of app
@@ -47,6 +47,25 @@ pub fn rip_binary(byte_data: Vec<u8>) -> anyhow::Result<Vec<bool>> {
     return Ok(binary_data);
 }
 
+fn translate_binary(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
+    let mut buffer: Vec<bool> = Vec::new();
+    let mut byte_data: Vec<u8> = Vec::new();
+
+    for bit in binary_data {
+        buffer.push(bit);
+
+        if buffer.len() == 8 {
+            //idk how this works but it does
+            let byte = buffer.iter().fold(0u8, |v, b| (v << 1) + (*b as u8));
+            // dbg!(byte);
+            byte_data.push(byte);
+            buffer.clear();
+        }
+    }
+
+    return Ok(byte_data);
+}
+
 //Bit of a waste
 pub fn rip_binary_u64(byte: u64) -> anyhow::Result<Vec<bool>> {
     let mut binary_data: Vec<bool> = Vec::new();
@@ -69,7 +88,7 @@ pub fn rip_binary_u64(byte: u64) -> anyhow::Result<Vec<bool>> {
     return Ok(binary_data);
 }
 
-fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
+pub fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
     fs::write(path, data)?;
     println!("File written succesfully");
     return Ok(());
@@ -111,7 +130,7 @@ fn get_pixel(frame: &EmbedSource, x: i32, y: i32) -> Option<Vec<u8>> {
         g_average as u8,
         b_average as u8
     ];
-    dbg!(&rgb_average);
+    // dbg!(&rgb_average);
     
     return Some(rgb_average);
 }
@@ -192,7 +211,7 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
     return Ok(());
 }
 
-pub fn read_frame(source: &EmbedSource, out_mode: &OutputMode) {
+fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>>{
     let size = source.size as usize;
     let half_size = (source.size/2) as i32;
     let width = source.width;
@@ -215,6 +234,8 @@ pub fn read_frame(source: &EmbedSource, out_mode: &OutputMode) {
                     }
                 }
             }
+
+            return Ok(byte_data);
         },
         OutputMode::Binary => {
             let mut binary_data: Vec<bool> = Vec::new();
@@ -233,6 +254,8 @@ pub fn read_frame(source: &EmbedSource, out_mode: &OutputMode) {
                     }
                 }
             }
+
+            return Ok(translate_binary(binary_data)?);
         }
     }
 }
@@ -240,10 +263,12 @@ pub fn read_frame(source: &EmbedSource, out_mode: &OutputMode) {
 Instructions:
 Etched on first frame, always be wrtten in binary despite output mode
 Output mode is the first byte
+Size is constant 5
 11111111 = Color (255), 00000000 = Binary(0),
 Second byte will be the size of the pixels
 FPS doesn't matter, but can add it anyways
 Potentially add ending pointer so it doesn't make useless bytes
+^^Currently implemented(?), unused
 */
 
 fn etch_instructions(settings: &Settings, data: &Data) 
@@ -276,17 +301,34 @@ fn etch_instructions(settings: &Settings, data: &Data)
         Err(_) => {println!("End of data reached")}
     }
 
-    highgui::named_window("window", WINDOW_FULLSCREEN)?;
-    highgui::imshow("window", &source.image)?;
-    highgui::wait_key(10000000)?;
+    // highgui::named_window("window", WINDOW_FULLSCREEN)?;
+    // highgui::imshow("window", &source.image)?;
+    // highgui::wait_key(10000000)?;
 
-    imwrite("src/out/test1.png", &source.image, &Vector::new())?;
+    // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
 
     return Ok(source);
 }
 
-fn read_instructions() {
+fn read_instructions(source: &EmbedSource) -> anyhow::Result<(OutputMode, Settings)> {
+    let byte_data = read_frame(source, &OutputMode::Binary)?;
 
+    let out_mode = byte_data[0];
+
+    let out_mode = match out_mode {
+        255 => OutputMode::Color,
+        _ => OutputMode::Binary,
+    };
+
+    let size = byte_data[1] as i32;
+    let fps = byte_data[2] as i32;
+    let height = source.height;
+    let width = source.width;
+
+    let settings = Settings::new(size, fps, width, height);
+    
+    // println!("Output mode is: {}\nsize is: {}\nfps is: {}", out_mode, size, fps);
+    return Ok((out_mode, settings));
 }
 
 pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
@@ -323,4 +365,35 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     println!("Video embedded succesfully at {}", path);
 
     return Ok(());
+}
+
+pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
+    let mut video = VideoCapture::from_file(&path, CAP_ANY)
+            .expect("Could not open video path");
+    let mut frame = Mat::default();
+
+    //Could probably avoid cloning
+    video.read(&mut frame)?;
+    let instruction_source = EmbedSource::from(frame.clone(), 5);
+    let (out_mode, settings) = read_instructions(&instruction_source)?;
+
+    let mut byte_data: Vec<u8> = Vec::new();
+    loop {
+        video.read(&mut frame)?;
+
+        //If it reads an empty image, the video stopped
+        if frame.cols() == 0 {
+            break;
+        }
+
+        //Passing Data might speed up
+        //CLONING, AAAAAAAAAAAAAA
+        //Massive slow down vvv
+        let source = EmbedSource::from(frame.clone(), settings.size);
+        let batch = read_frame(&source, &out_mode)?;
+        byte_data.extend(batch);
+    }
+
+    println!("Video read succesfully");
+    return Ok(byte_data);
 }
