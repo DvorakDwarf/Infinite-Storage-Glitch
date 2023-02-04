@@ -1,0 +1,26 @@
+FPS matters more and more with increasing FPS
+Weird stuff under 10fps
+size 1 = data corruption
+cargo build --release
+720p had less crunchy sound, what about 144p ?
+
+WHAT TO DO ON THE ISG:
+Optimize:
+    Find a tool for optimization
+    GET RID OF THAT FUCKING CLONE (Doesn't matter much)
+    Multithreading (thread # agnostic)
+Fix the weird bug
+    Make blocks start from top right corner (Gives me even sizes)
+    make it so differentiates between regular, 16:9 size and actual size
+    It stops me from using anything other than 360p/720p
+    Might have something built in
+    Might be the length of file written in instructions
+Test more b/w formats
+    What leads to max compression resistance and min runtime
+    See if lower resolution changes anything
+u32 instructions
+    Might still be not enough, idk
+    Used for end-of-file pointers
+    Convert every instruction to u32
+
+Use branches

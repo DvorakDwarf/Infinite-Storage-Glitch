@@ -10,6 +10,7 @@ use opencv::videoio::{VideoWriter, VideoCapture, CAP_ANY};
 
 use crate::settings::{Settings, OutputMode, Data, self};
 use crate::embedsource::EmbedSource;
+use crate::timer::Timer;
 
 //Get and write bytes from and to files. Start and end of app
 //sounds cooler than og name (encode)
@@ -155,6 +156,7 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize) 
         -> anyhow::Result<()>{
+
     let half_size = source.size/2;
     let width = source.width;
     let height = source.height;
@@ -212,6 +214,8 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
 }
 
 fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>>{
+    // let _timer = Timer::new("Reading frame");
+    
     let size = source.size as usize;
     let half_size = (source.size/2) as i32;
     let width = source.width;
@@ -246,7 +250,7 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
                         continue;
                     } else {
                         let rgb = rgb.unwrap();
-                        if rgb[0] >= 127 {
+                        if rgb[0] >= 130 {
                             binary_data.push(true);
                         } else {
                             binary_data.push(false);
@@ -274,6 +278,7 @@ Potentially add ending pointer so it doesn't make useless bytes
 
 fn etch_instructions(settings: &Settings, data: &Data) 
         -> anyhow::Result<EmbedSource> {
+    
     let mut u8_instructions: Vec<u8> = Vec::new();
     
     //Both adds the output mode to instructions and finds last byte
@@ -295,7 +300,15 @@ fn etch_instructions(settings: &Settings, data: &Data)
     binary_instructions.extend(last_byte_pointer);
     let instruction_data = Data::from_binary(binary_instructions);
 
-    let mut source = EmbedSource::new(5, settings.width, settings.height);
+    //Here to make sure instruction frame and the rest are of the same size
+    //Using EmbedSource::new() in case it changes and this code becomes disconnected from the rest
+    let dummy = EmbedSource::new(settings.size, settings.width, settings.height);
+    let width = dummy.width;
+    let height = dummy.height;
+
+    //TEMPORARY
+    // let mut source = EmbedSource::new(5, width, height);
+    let mut source = EmbedSource::new(settings.size, width, height);
     let mut index = 0;
     match etch_frame(&mut source, &instruction_data, &mut index) {
         Ok(_) => {},
@@ -348,6 +361,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
 
     loop {
         // dbg!("Looped!");
+        // let _timer = Timer::new("Etching frame");
         let mut source = EmbedSource::new(settings.size, settings.width, settings.height);
         match etch_frame(&mut source, &data, &mut index) {
             Ok(_) => frames.push(source),
@@ -361,7 +375,9 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     //Mess around with lossless codecs, png seems fine
     //Fourcc is a code for video codecs, trying to use a lossless one
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
-    let frame_size = Size::new(frames[0].width, frames[0].height);
+    
+    let frame_size = Size::new(frames[1].width, frames[1].height);
+    dbg!(&frame_size);
     let mut video = VideoWriter::new(path, fourcc, settings.fps, frame_size, true)?;
 
     //Putting them in vector might be slower
@@ -383,12 +399,14 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
 
     //Could probably avoid cloning
     video.read(&mut frame)?;
-    let instruction_source = EmbedSource::from(frame.clone(), 5);
+    //TEMPORARY
+    let instruction_source = EmbedSource::from(frame.clone(), 3);
     let (out_mode, settings) = read_instructions(&instruction_source)?;
     dbg!(&settings);
 
     let mut byte_data: Vec<u8> = Vec::new();
     loop {
+        // let _timer = Timer::new("Reading frame  (clone included)");
         video.read(&mut frame)?;
 
         //If it reads an empty image, the video stopped

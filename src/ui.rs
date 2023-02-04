@@ -75,9 +75,10 @@ fn embed_path()  -> anyhow::Result<()> {
     .with_default("src/tests/Baby.wav")
     .prompt().unwrap();
 
+    //"144p" => (192, 144),
     //For some reason only 360p and 720p work
     let (width, height) = match resolution {
-        "144p" => (192, 144),
+        "144p" => (100, 100),
         "240p" => (426, 240),
         "360p" => (640, 360),
         "480p" => (854, 480),
@@ -138,7 +139,7 @@ fn dislodge_path()  -> anyhow::Result<()> {
         .prompt().unwrap();
 
     let out_path = Text::new("Where should the output go ?")
-        .with_default("Baby2.wav")
+        .with_default("setting_tests/Baby.wav")
         .with_help_message("Please include name of file and extension")
         .prompt().unwrap();
 

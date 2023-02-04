@@ -15,6 +15,8 @@ impl EmbedSource {
         let width = width - (width % size);
         let height = height - (height % size);
 
+        // dbg!(width, height);
+
         //WHy does this have to be unsafe smh
         unsafe {
             let image = Mat::new_rows_cols(height, width, CV_8UC3).unwrap();

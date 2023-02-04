@@ -2,6 +2,7 @@ mod ui;
 mod etcher;
 mod settings;
 mod embedsource;
+mod timer;
 
 use settings::{Data, Settings};
 
