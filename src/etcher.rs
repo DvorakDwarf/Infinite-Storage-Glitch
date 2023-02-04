@@ -158,8 +158,8 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
         -> anyhow::Result<()>{
 
     let half_size = source.size/2;
-    let width = source.width;
-    let height = source.height;
+    let width = source.actual_size.width;
+    let height = source.actual_size.height;
     let size = source.size as usize;
 
     for y in (half_size..height).step_by(size) {
@@ -210,6 +210,14 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
             etch_pixel(source, rgb, x, y).unwrap();
         }
     }
+
+    // dbg!(&source.image.cols(), &source.image.rows());
+    // highgui::named_window("window", WINDOW_FULLSCREEN)?;
+    // highgui::imshow("window", &source.image)?;
+    // highgui::wait_key(10000000)?;
+
+    // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
+
     return Ok(());
 }
 
@@ -218,8 +226,8 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
     
     let size = source.size as usize;
     let half_size = (source.size/2) as i32;
-    let width = source.width;
-    let height = source.height;
+    let width = source.actual_size.width;
+    let height = source.actual_size.height;
 
     //Fix this nesting spiral
     match out_mode {
@@ -278,6 +286,7 @@ Potentially add ending pointer so it doesn't make useless bytes
 
 fn etch_instructions(settings: &Settings, data: &Data) 
         -> anyhow::Result<EmbedSource> {
+    let instruction_size = 5;
     
     let mut u8_instructions: Vec<u8> = Vec::new();
     
@@ -302,13 +311,11 @@ fn etch_instructions(settings: &Settings, data: &Data)
 
     //Here to make sure instruction frame and the rest are of the same size
     //Using EmbedSource::new() in case it changes and this code becomes disconnected from the rest
-    let dummy = EmbedSource::new(settings.size, settings.width, settings.height);
-    let width = dummy.width;
-    let height = dummy.height;
+    // let dummy = EmbedSource::new(settings.size, settings.width, settings.height);
+    // let width = dummy.width;
+    // let height = dummy.height;
 
-    //TEMPORARY
-    // let mut source = EmbedSource::new(5, width, height);
-    let mut source = EmbedSource::new(settings.size, width, height);
+    let mut source = EmbedSource::new(instruction_size, settings.width, settings.height);
     let mut index = 0;
     match etch_frame(&mut source, &instruction_data, &mut index) {
         Ok(_) => {},
@@ -343,8 +350,9 @@ fn read_instructions(source: &EmbedSource) -> anyhow::Result<(OutputMode, Settin
 
     let size = byte_data[1] as i32;
     let fps = byte_data[2] as i32;
-    let height = source.height;
-    let width = source.width;
+    //FUck up ?
+    let height = source.frame_size.height;
+    let width = source.frame_size.width;
 
     let settings = Settings::new(size, fps, width, height);
     
@@ -376,8 +384,11 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     //Fourcc is a code for video codecs, trying to use a lossless one
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
     
-    let frame_size = Size::new(frames[1].width, frames[1].height);
+    //Check if frame_size is flipped
+    let frame_size = frames[0].frame_size;
     dbg!(&frame_size);
+    let actual_size = frames[1].actual_size;
+    dbg!(&actual_size);
     let mut video = VideoWriter::new(path, fourcc, settings.fps, frame_size, true)?;
 
     //Putting them in vector might be slower
@@ -393,6 +404,8 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
 }
 
 pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
+    let instruction_size = 5;
+
     let mut video = VideoCapture::from_file(&path, CAP_ANY)
             .expect("Could not open video path");
     let mut frame = Mat::default();
@@ -400,7 +413,7 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
     //Could probably avoid cloning
     video.read(&mut frame)?;
     //TEMPORARY
-    let instruction_source = EmbedSource::from(frame.clone(), 3);
+    let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
     let (out_mode, settings) = read_instructions(&instruction_source)?;
     dbg!(&settings);
 
