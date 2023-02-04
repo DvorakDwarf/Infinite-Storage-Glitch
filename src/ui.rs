@@ -1,13 +1,13 @@
 use anyhow;
-
 use inquire::{
     CustomType, min_length, Confirm, MultiSelect, Password, Select, Text,
 };
+use youtube_dl::{download_yt_dlp, YoutubeDl};
 
-// use crate::settings::{Settings, OutputMode};
-// use crate::etcher::Embedder;
+use crate::settings::{Settings, OutputMode, Data};
+use crate::etcher;
 
-pub fn summon_gooey() {
+pub async fn summon_gooey() -> anyhow::Result<()> {
 
     let options = vec![
         "Embed",
@@ -22,14 +22,14 @@ pub fn summon_gooey() {
 
     match modes {
         "Embed" => return embed_path(),
-        "Download" => return download_path(),
+        "Download" => return download_path().await,
         "Dislodge" => return dislodge_path(),
         _ => {panic!("Something weird happened when selecting modes");}
     }
 }
 
 
-fn embed_path() {
+fn embed_path()  -> anyhow::Result<()> {
     let out_modes = vec![
         "Colored",
         "B/W (Binary)",
@@ -37,9 +37,7 @@ fn embed_path() {
 
     let resolutions = vec![
         "144p",
-        "240p",
         "360p",
-        "480p",
         "720p",
     ];
 
@@ -48,25 +46,22 @@ fn embed_path() {
         .prompt()
         .unwrap();
 
-    let size = 1usize;
-    if out_mode == out_modes[1] {
-        let size = CustomType::<usize>::new("What size should the blocks be ?")
-            .with_error_message("Please type a valid number")
-            .with_help_message("Bigger blocks are more resistant to compression, I recommend 5-15 if you use this feature.")
-            .with_default(1)
-            .prompt();
-    }
+    let size = CustomType::<i32>::new("What size should the blocks be ?")
+        .with_error_message("Please type a valid number")
+        .with_help_message("Bigger blocks are more resistant to compression, I recommend 5-15 if you use this feature.")
+        .with_default(1)
+        .prompt()?;
 
-    // let out_mode = match out_mode {
-    //     "Colored" => OutputMode::Color,
-    //     "B/W (Binary)" => OutputMode::Binary,
-    //     _ => {panic!("AAAAAAAAAAAAAAAA")},
-    // };
+    let out_mode = match out_mode {
+        "Colored" => OutputMode::Color,
+        "B/W (Binary)" => OutputMode::Binary,
+        _ => {panic!("AAAAAAAAAAAAAAAA")},
+    };
 
-    let fps = CustomType::<f64>::new("What fps should the video be at ?")
+    let fps = CustomType::<i32>::new("What fps should the video be at ?")
         .with_error_message("Please type a valid number")
         .with_help_message("Decreasing fps may decrease chance of compression")
-        .with_default(30.0)
+        .with_default(30)
         .prompt()
         .expect("Invalid fps");
 
@@ -80,8 +75,9 @@ fn embed_path() {
     .with_default("src/tests/Baby.wav")
     .prompt().unwrap();
 
+    //For some reason only 360p and 720p work
     let (width, height) = match resolution {
-        "144p" => (256, 144),
+        "144p" => (192, 144),
         "240p" => (426, 240),
         "360p" => (640, 360),
         "480p" => (854, 480),
@@ -89,16 +85,65 @@ fn embed_path() {
         _ => (640, 360),
     };
 
-    // let settings = Settings::new(out_mode, size, fps, width, height).expect("Could not finish making settings");
-    
-    // let mut embdr = Embedder::encode(&path, settings).expect("Could not encode");
-    // embdr.embed("output.avi").expect("Could not embed");
+    match out_mode {
+        OutputMode::Color => {
+            let bytes = etcher::rip_bytes(&path)?;
+
+            let data = Data::from_color(bytes);
+            let settings = Settings::new(size, fps, width, height);
+
+            etcher::etch("output.avi", data, settings)?;
+        },
+        OutputMode::Binary => {
+            let bytes = etcher::rip_bytes(&path)?;
+            let binary = etcher::rip_binary(bytes)?;
+
+            let data = Data::from_binary(binary);
+            let settings = Settings::new(size, fps, width, height);
+
+            etcher::etch("output.avi", data, settings)?;
+        },
+    }
+
+    return Ok(());
 }
 
-fn download_path() {
+async fn download_path()  -> anyhow::Result<()> {
+    //
+    let url = Text::new("What is the url to the video ?")
+        .prompt().unwrap();
 
+    let yt_dlp_path = download_yt_dlp(".").await?;
+
+    println!("Starting the download, there is no progress bar");
+    let output = YoutubeDl::new(&url)
+        .youtube_dl_path(yt_dlp_path)
+        .format("best")
+        .download(true)
+        .run_async()
+        .await?;
+
+    let video = output.into_single_video().unwrap();
+    let title = video.title;
+
+    println!("Video downloaded succesfully");
+
+    return Ok(());
 }
 
-fn dislodge_path() {
+//TEMPORARY DEFAULTS
+fn dislodge_path()  -> anyhow::Result<()> {
+    let in_path = Text::new("What is the path to your video ?")
+        .with_default("output.avi")
+        .prompt().unwrap();
 
+    let out_path = Text::new("Where should the output go ?")
+        .with_default("Baby2.wav")
+        .with_help_message("Please include name of file and extension")
+        .prompt().unwrap();
+
+    let out_data = etcher::read(&in_path)?;
+    etcher::write_bytes(&out_path, out_data)?;
+
+    return Ok(());
 }

@@ -43,7 +43,7 @@ pub fn rip_binary(byte_data: Vec<u8>) -> anyhow::Result<Vec<bool>> {
         }
     }
     println!("Binary ripped succesfully");
-    println!("Binary length: {}", binary_data.len());
+    // println!("Binary length: {}", binary_data.len());
     return Ok(binary_data);
 }
 
@@ -246,7 +246,7 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
                         continue;
                     } else {
                         let rgb = rgb.unwrap();
-                        if rgb[0] == 255 {
+                        if rgb[0] >= 127 {
                             binary_data.push(true);
                         } else {
                             binary_data.push(false);
@@ -254,8 +254,9 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
                     }
                 }
             }
-
-            return Ok(translate_binary(binary_data)?);
+            
+            let translated = translate_binary(binary_data)?;
+            return Ok(translated);
         }
     }
 }
@@ -298,7 +299,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
     let mut index = 0;
     match etch_frame(&mut source, &instruction_data, &mut index) {
         Ok(_) => {},
-        Err(_) => {println!("End of data reached")}
+        Err(_) => {println!("Instructions written")}
     }
 
     // highgui::named_window("window", WINDOW_FULLSCREEN)?;
@@ -311,7 +312,14 @@ fn etch_instructions(settings: &Settings, data: &Data)
 }
 
 fn read_instructions(source: &EmbedSource) -> anyhow::Result<(OutputMode, Settings)> {
+    // highgui::named_window("window", WINDOW_FULLSCREEN)?;
+    // highgui::imshow("window", &source.image)?;
+    // highgui::wait_key(10000000)?;
+
+    // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
+    
     let byte_data = read_frame(source, &OutputMode::Binary)?;
+    // dbg!(&byte_data);
 
     let out_mode = byte_data[0];
 
@@ -344,7 +352,8 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         match etch_frame(&mut source, &data, &mut index) {
             Ok(_) => frames.push(source),
             Err(v) => {
-                dbg!(v);
+                frames.push(source);
+                println!("Reached the end of data");
                 break;}, 
         }
     }
@@ -376,6 +385,7 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
     video.read(&mut frame)?;
     let instruction_source = EmbedSource::from(frame.clone(), 5);
     let (out_mode, settings) = read_instructions(&instruction_source)?;
+    dbg!(&settings);
 
     let mut byte_data: Vec<u8> = Vec::new();
     loop {

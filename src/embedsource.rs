@@ -32,9 +32,13 @@ impl EmbedSource {
         let width = image.cols();
         let height = image.rows();
 
+        // dbg!(width, height, size);
+
         //Cuts off borders if size doesn't perfectly fit, also -1 cuz index
-        let width = width - (width % size) - 1;
-        let height = height - (height % size) - 1;
+        // let width = width - (width % size) - 1;
+        // let height = height - (height % size) - 1;
+        let width = width - (width % size);
+        let height = height - (height % size);
 
         EmbedSource {
             image,

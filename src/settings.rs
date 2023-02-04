@@ -36,6 +36,7 @@ impl Data {
     } 
 }
 
+#[derive(Debug)]
 pub struct Settings {
     pub size: i32,
     pub fps: f64,
