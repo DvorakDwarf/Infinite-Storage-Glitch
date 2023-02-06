@@ -1,22 +1,33 @@
-FPS matters more and more with increasing FPS
+FPS matters more and more with increasing resolution
 Weird stuff under 10fps
 size 1 = data corruption
+size 2-5 works
 cargo build --release
 720p had less crunchy sound, what about 144p ?
+I tried again and I don't think resolution matters
+Zip all the files
 
 WHAT TO DO ON THE ISG:
 Optimize:
     Find a tool for optimization
     GET RID OF THAT FUCKING CLONE (Doesn't matter much)
     Multithreading (thread # agnostic)
-Test more b/w formats
-    What leads to max compression resistance and min runtime
-    See if lower resolution changes anything
 u32 instructions
     Might still be not enough, idk
     Used for end-of-file pointers
     Convert every instruction to u32
 Add standard loadout
+
+1. Multithreading
+2. Find optimization tool
+3. Optimize
+4. u32/u64 instructions
+5. Standard set of options
+6. Test with .zip and .rar
+7. Post to github and shill
+8. Help Luna with Inflation Monopoly
+9. Encryption
+10. Fix weird bug ?
 
 
 
