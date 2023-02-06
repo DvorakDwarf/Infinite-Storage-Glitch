@@ -8,7 +8,6 @@ use crate::settings::{Settings, OutputMode, Data};
 use crate::etcher;
 
 pub async fn summon_gooey() -> anyhow::Result<()> {
-
     let options = vec![
         "Embed",
         "Download",
@@ -37,7 +36,9 @@ fn embed_path()  -> anyhow::Result<()> {
 
     let resolutions = vec![
         "144p",
+        "240p",
         "360p",
+        "480p",
         "720p",
     ];
 
@@ -48,8 +49,8 @@ fn embed_path()  -> anyhow::Result<()> {
 
     let size = CustomType::<i32>::new("What size should the blocks be ?")
         .with_error_message("Please type a valid number")
-        .with_help_message("Bigger blocks are more resistant to compression, I recommend 5-15 if you use this feature.")
-        .with_default(1)
+        .with_help_message("Bigger blocks are more resistant to compression, I recommend 2-5.")
+        .with_default(2)
         .prompt()?;
 
     let out_mode = match out_mode {
@@ -60,14 +61,14 @@ fn embed_path()  -> anyhow::Result<()> {
 
     let fps = CustomType::<i32>::new("What fps should the video be at ?")
         .with_error_message("Please type a valid number")
-        .with_help_message("Decreasing fps may decrease chance of compression")
+        .with_help_message("Decreasing fps may decrease chance of compression. ~10fps works")
         .with_default(30)
         .prompt()
         .expect("Invalid fps");
 
     //Check if higher resolution runs faster
     let resolution = Select::new("Pick a resolution", resolutions)
-        .with_help_message("I recommend 360p")
+        .with_help_message("I recommend 720p as the resolution won't affect compression")
         .prompt()
         .unwrap();
 
@@ -75,10 +76,8 @@ fn embed_path()  -> anyhow::Result<()> {
     .with_default("src/tests/Baby.wav")
     .prompt().unwrap();
 
-    //"144p" => (192, 144),
-    //For some reason only 360p and 720p work
     let (width, height) = match resolution {
-        "144p" => (100, 100),
+        "144p" => (256, 144),
         "240p" => (426, 240),
         "360p" => (640, 360),
         "480p" => (854, 480),

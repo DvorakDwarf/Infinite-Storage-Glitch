@@ -100,18 +100,12 @@ pub fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
 
 //Returns average value of the pixel given size and location
 fn get_pixel(frame: &EmbedSource, x: i32, y: i32) -> Option<Vec<u8>> {
-    if frame.size % 2 != 1 {
-        panic!("Used even size for pixels, please choose something odd");
-    }
-
-    let half_size = frame.size/2;
-    
     let mut r_list: Vec<u8> = Vec::new();
     let mut g_list: Vec<u8> = Vec::new();
     let mut b_list: Vec<u8> = Vec::new();
 
-    for i in -half_size..half_size+1 {
-        for j in -half_size..half_size+1 {
+    for i in 0..frame.size {
+        for j in 0..frame.size {
             let bgr = frame.image.at_2d::<opencv::core::Vec3b>(y+i, x+j).unwrap();
             //could reduce size of integers ?
             r_list.push(bgr[2]);
@@ -141,10 +135,9 @@ fn get_pixel(frame: &EmbedSource, x: i32, y: i32) -> Option<Vec<u8>> {
 
 //Draws the pixels, exists so you can draw bigger blocks
 fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::Result<()> {
-    let half_size = frame.size/2;
 
-    for i in -half_size..half_size+1 {
-        for j in -half_size..half_size+1 {
+    for i in 0..frame.size {
+        for j in 0..frame.size {
             // dbg!(x, y);
             let bgr = frame.image.at_2d_mut::<opencv::core::Vec3b>(y+i, x+j)?;
             //Opencv devs are reptilians who believe in bgr
@@ -159,14 +152,13 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize) 
         -> anyhow::Result<()>{
-
-    let half_size = source.size/2;
+    
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
 
-    for y in (half_size..height).step_by(size) {
-        for x in (half_size..width).step_by(size) {
+    for y in (0..height).step_by(size) {
+        for x in (0..width).step_by(size) {
             // dbg!(&global_index);
             let local_index = global_index.clone();
 
@@ -231,14 +223,13 @@ fn read_frame2(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Ve
 
     imwrite("src/out/test1.png", &source.image, &Vector::new())?;
 
-    let half_size = source.size/2;
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
 
     let mut binary_data: Vec<bool> = Vec::new();
-    for y in (half_size..height).step_by(size) {
-        for x in (half_size..width).step_by(size) {
+    for y in (0..height).step_by(size) {
+        for x in (0..width).step_by(size) {
             let rgb = get_pixel(source, x, y).unwrap();
             // dbg!(&rgb);
             if rgb[0] > 130 {
@@ -256,7 +247,6 @@ fn read_frame2(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Ve
 fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>>{
     // let _timer = Timer::new("Reading frame");
     
-    let half_size = source.size/2;
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -267,8 +257,8 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
     match out_mode {
         OutputMode::Color => {
             let mut byte_data: Vec<u8> = Vec::new();
-            for y in (half_size..height).step_by(size) {
-                for x in (half_size..width).step_by(size) {
+            for y in (0..height).step_by(size) {
+                for x in (0..width).step_by(size) {
                     let rgb = get_pixel(&source, x, y);
                     if rgb == None {
                         continue;
@@ -285,8 +275,8 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
         },
         OutputMode::Binary => {
             let mut binary_data: Vec<bool> = Vec::new();
-            for y in (half_size..height).step_by(size) {
-                for x in (half_size..width).step_by(size) {
+            for y in (0..height).step_by(size) {
+                for x in (0..width).step_by(size) {
                     let rgb = get_pixel(&source, x, y);
                     if rgb == None {
                         continue;
@@ -419,10 +409,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
     
     //Check if frame_size is flipped
-    let frame_size = frames[0].frame_size;
-    dbg!(&frame_size);
-    let actual_size = frames[1].actual_size;
-    dbg!(&actual_size);
+    let frame_size = frames[1].frame_size;
     let mut video = VideoWriter::new(path, fourcc, settings.fps, frame_size, true)?;
 
     //Putting them in vector might be slower
@@ -449,8 +436,8 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
     //TEMPORARY
     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
     let (out_mode, settings) = read_instructions(&instruction_source)?;
-    dbg!(&settings);
-    dbg!(&out_mode);
+    // dbg!(&settings);
+    // dbg!(&out_mode);
 
     let mut byte_data: Vec<u8> = Vec::new();
     loop {

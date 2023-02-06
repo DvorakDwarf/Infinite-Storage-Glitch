@@ -14,11 +14,11 @@ impl EmbedSource {
     pub fn new(size: i32, width: i32, height: i32) -> EmbedSource {
         let frame_size = Size::new(width, height);
 
-        let width = width - (width % size);
-        let height = height - (height % size);
-        let actual_size = Size::new(width, height);
+        let actual_width = width - (width % size);
+        let actual_height = height - (height % size);
+        let actual_size = Size::new(actual_width, actual_height);
 
-        // dbg!(width, height);
+        // dbg!(actual_size);
 
         //WHy does this have to be unsafe smh
         unsafe {
