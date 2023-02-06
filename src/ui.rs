@@ -139,7 +139,7 @@ fn dislodge_path()  -> anyhow::Result<()> {
         .prompt().unwrap();
 
     let out_path = Text::new("Where should the output go ?")
-        .with_default("setting_tests/Baby.wav")
+        .with_default("output.wav")
         .with_help_message("Please include name of file and extension")
         .prompt().unwrap();
 

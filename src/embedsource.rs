@@ -38,13 +38,10 @@ impl EmbedSource {
         let height = image.rows();
         let frame_size = Size::new(width, height);
 
+        //Cuts off borders if size doesn't perfectly fit
         let width = width - (width % size);
         let height = height - (height % size);
         let actual_size = Size::new(width, height);
-
-        //Cuts off borders if size doesn't perfectly fit, also -1 cuz index
-        let width = width - (width % size);
-        let height = height - (height % size);
 
         EmbedSource {
             image,

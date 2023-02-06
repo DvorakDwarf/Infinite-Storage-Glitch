@@ -12,6 +12,11 @@ Optimize:
 Fix the weird bug
     Make blocks start from top right corner (Gives me even sizes)
     make it so differentiates between regular, 16:9 size and actual size
+    Embedding or reading an imperfect causes bugs
+    Not sure if a problem of embedding or reading
+    Might be get_pixel
+    It's not overlapping, I'm sure
+    I noticed that every second frame seems broken
     It stops me from using anything other than 360p/720p
     Might have something built in
     Might be the length of file written in instructions

@@ -64,6 +64,9 @@ fn translate_binary(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
         }
     }
 
+    // dbg!(binary_data.len());
+    // dbg!(buffer.len());
+    // dbg!(byte_data.len());
     return Ok(byte_data);
 }
 
@@ -221,13 +224,44 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
     return Ok(());
 }
 
+fn read_frame2(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>> {
+    highgui::named_window("window", WINDOW_FULLSCREEN)?;
+    highgui::imshow("window", &source.image)?;
+    highgui::wait_key(10000000)?;
+
+    imwrite("src/out/test1.png", &source.image, &Vector::new())?;
+
+    let half_size = source.size/2;
+    let width = source.actual_size.width;
+    let height = source.actual_size.height;
+    let size = source.size as usize;
+
+    let mut binary_data: Vec<bool> = Vec::new();
+    for y in (half_size..height).step_by(size) {
+        for x in (half_size..width).step_by(size) {
+            let rgb = get_pixel(source, x, y).unwrap();
+            // dbg!(&rgb);
+            if rgb[0] > 130 {
+                binary_data.push(true);
+            } else {
+                binary_data.push(false);
+            }
+        }
+    }
+
+    let translated = translate_binary(binary_data)?;
+    return Ok(translated);
+}
+
 fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>>{
     // let _timer = Timer::new("Reading frame");
     
-    let size = source.size as usize;
-    let half_size = (source.size/2) as i32;
+    let half_size = source.size/2;
     let width = source.actual_size.width;
     let height = source.actual_size.height;
+    let size = source.size as usize;
+
+    // dbg!(width, height);
 
     //Fix this nesting spiral
     match out_mode {
@@ -258,7 +292,7 @@ fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec
                         continue;
                     } else {
                         let rgb = rgb.unwrap();
-                        if rgb[0] >= 130 {
+                        if rgb[0] >= 127 {
                             binary_data.push(true);
                         } else {
                             binary_data.push(false);
@@ -416,6 +450,7 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
     let (out_mode, settings) = read_instructions(&instruction_source)?;
     dbg!(&settings);
+    dbg!(&out_mode);
 
     let mut byte_data: Vec<u8> = Vec::new();
     loop {
@@ -431,6 +466,8 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
         //CLONING, AAAAAAAAAAAAAA
         //Massive slow down vvv
         let source = EmbedSource::from(frame.clone(), settings.size);
+        // let batch = read_frame2(&source, &out_mode)?;
+        //TEMPORARY
         let batch = read_frame(&source, &out_mode)?;
         byte_data.extend(batch);
     }
