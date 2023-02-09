@@ -355,7 +355,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
     return Ok(source);
 }
 
-fn read_instructions(source: &EmbedSource) -> anyhow::Result<(OutputMode, Settings)> {
+fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(OutputMode, Settings)> {
     // highgui::named_window("window", WINDOW_FULLSCREEN)?;
     // highgui::imshow("window", &source.image)?;
     // highgui::wait_key(10000000)?;
@@ -378,15 +378,34 @@ fn read_instructions(source: &EmbedSource) -> anyhow::Result<(OutputMode, Settin
     let height = source.frame_size.height;
     let width = source.frame_size.width;
 
-    let settings = Settings::new(size, fps, width, height);
+    let settings = Settings::new(size, threads, fps, width, height);
     
     // println!("Output mode is: {}\nsize is: {}\nfps is: {}", out_mode, size, fps);
     return Ok((out_mode, settings));
 }
 
+fn summon_etch_thread() -> anyhow::Result<()> {
+
+
+    return Ok(());
+}
+
 pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     let mut frames = Vec::new();
     let mut index: usize = 0;
+
+    match data.out_mode {
+        OutputMode::Color => {
+            let length = data.bytes.len();
+            let chunk_size = (length / settings.threads) + 1;
+
+            for chunk in data.bytes.chunks(chunk_size) {
+                dbg!(chunk.len());
+            }
+            return Ok(());
+        },
+        OutputMode::Binary => {},
+    }
 
     let instructional_frame = etch_instructions(&settings, &data)?;
     frames.push(instructional_frame);
@@ -424,7 +443,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     return Ok(());
 }
 
-pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
+pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     let instruction_size = 5;
 
     let mut video = VideoCapture::from_file(&path, CAP_ANY)
@@ -433,11 +452,8 @@ pub fn read(path: &str) -> anyhow::Result<Vec<u8>> {
 
     //Could probably avoid cloning
     video.read(&mut frame)?;
-    //TEMPORARY
     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
-    let (out_mode, settings) = read_instructions(&instruction_source)?;
-    // dbg!(&settings);
-    // dbg!(&out_mode);
+    let (out_mode, settings) = read_instructions(&instruction_source, threads)?;
 
     let mut byte_data: Vec<u8> = Vec::new();
     loop {

@@ -10,6 +10,7 @@ pub struct Data {
     pub out_mode: OutputMode,
 }
 
+//Get rid of possible empty spaces
 impl Data {
     pub fn new_out_mode(out_mode: OutputMode) -> Data {
         Data {
@@ -39,16 +40,18 @@ impl Data {
 #[derive(Debug)]
 pub struct Settings {
     pub size: i32,
+    pub threads: usize,
     pub fps: f64,
     pub width: i32,
     pub height: i32,
 }
 
 impl Settings {
-    pub fn new(size: i32, fps: i32, width: i32, height: i32,) 
+    pub fn new(size: i32, threads: usize, fps: i32, width: i32, height: i32) 
             -> Settings {
         Settings {
             size,
+            threads,
             fps: fps as f64,
             height, 
             width

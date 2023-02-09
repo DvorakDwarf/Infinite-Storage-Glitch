@@ -53,6 +53,12 @@ fn embed_path()  -> anyhow::Result<()> {
         .with_default(2)
         .prompt()?;
 
+    let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
+        .with_error_message("Please type a valid number")
+        .with_help_message("The more threads, the merrier")
+        .with_default(4)
+        .prompt()?;
+
     let out_mode = match out_mode {
         "Colored" => OutputMode::Color,
         "B/W (Binary)" => OutputMode::Binary,
@@ -90,7 +96,7 @@ fn embed_path()  -> anyhow::Result<()> {
             let bytes = etcher::rip_bytes(&path)?;
 
             let data = Data::from_color(bytes);
-            let settings = Settings::new(size, fps, width, height);
+            let settings = Settings::new(size, threads, fps, width, height);
 
             etcher::etch("output.avi", data, settings)?;
         },
@@ -99,7 +105,7 @@ fn embed_path()  -> anyhow::Result<()> {
             let binary = etcher::rip_binary(bytes)?;
 
             let data = Data::from_binary(binary);
-            let settings = Settings::new(size, fps, width, height);
+            let settings = Settings::new(size, threads, fps, width, height);
 
             etcher::etch("output.avi", data, settings)?;
         },
@@ -142,7 +148,13 @@ fn dislodge_path()  -> anyhow::Result<()> {
         .with_help_message("Please include name of file and extension")
         .prompt().unwrap();
 
-    let out_data = etcher::read(&in_path)?;
+    let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
+        .with_error_message("Please type a valid number")
+        .with_help_message("The more threads, the merrier")
+        .with_default(4)
+        .prompt()?;
+
+    let out_data = etcher::read(&in_path, threads)?;
     etcher::write_bytes(&out_path, out_data)?;
 
     return Ok(());
