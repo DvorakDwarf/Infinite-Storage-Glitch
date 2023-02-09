@@ -150,6 +150,57 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
     return Ok(());
 }
 
+fn etch_bw(source: &mut EmbedSource, data: &[bool], global_index: &mut usize) {
+    let width = source.actual_size.width;
+    let height = source.actual_size.height;
+    let size = source.size as usize;
+
+    for y in (0..height).step_by(size) {
+        for x in (0..width).step_by(size) {
+            let local_index = global_index.clone();
+
+            let brightness = if data[local_index] == true {
+                255 // 1
+            } else {
+                0   // 0
+            };
+            let rgb = vec![
+                brightness,
+                brightness,
+                brightness,
+            ];
+
+            //Increment index so we move along the data
+            *global_index += 1;
+
+            etch_pixel(source, rgb, x, y).unwrap();
+        }
+    }
+}
+
+fn etch_color(source: &mut EmbedSource, data: &[u8], global_index: &mut usize) {
+    let width = source.actual_size.width;
+    let height = source.actual_size.height;
+    let size = source.size as usize;
+
+    for y in (0..height).step_by(size) {
+        for x in (0..width).step_by(size) {
+            let local_index = global_index.clone();
+
+            let rgb = 
+            vec![
+                data[local_index],  //Red
+                data[local_index+1],//Green
+                data[local_index+2] //Blue
+                ];
+            //Increment index so we move along the data
+            *global_index += 3;
+
+            etch_pixel(source, rgb, x, y).unwrap();
+        }
+    }
+}
+
 fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize) 
         -> anyhow::Result<()>{
     
@@ -214,34 +265,6 @@ fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize)
     // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
 
     return Ok(());
-}
-
-fn read_frame2(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>> {
-    highgui::named_window("window", WINDOW_FULLSCREEN)?;
-    highgui::imshow("window", &source.image)?;
-    highgui::wait_key(10000000)?;
-
-    imwrite("src/out/test1.png", &source.image, &Vector::new())?;
-
-    let width = source.actual_size.width;
-    let height = source.actual_size.height;
-    let size = source.size as usize;
-
-    let mut binary_data: Vec<bool> = Vec::new();
-    for y in (0..height).step_by(size) {
-        for x in (0..width).step_by(size) {
-            let rgb = get_pixel(source, x, y).unwrap();
-            // dbg!(&rgb);
-            if rgb[0] > 130 {
-                binary_data.push(true);
-            } else {
-                binary_data.push(false);
-            }
-        }
-    }
-
-    let translated = translate_binary(binary_data)?;
-    return Ok(translated);
 }
 
 fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>>{

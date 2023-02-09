@@ -13,6 +13,7 @@ Optimize:
     GET RID OF THAT FUCKING CLONE (Doesn't matter much)
     Multithreading (thread # agnostic)
     Threads with HQ or set of designated frames ?
+    Consider whether Data is still useful
 u32 instructions
     Might still be not enough, idk
     Used for end-of-file pointers
