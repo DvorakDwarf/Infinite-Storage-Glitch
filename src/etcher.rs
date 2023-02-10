@@ -1,7 +1,9 @@
-use std::{fs, vec};
+use std::{fs, vec, thread};
+use std::thread::JoinHandle;
 
 use anyhow;
 use anyhow::Error; //anyhow::Error::msg("My err");
+
 use opencv::prelude::*;
 use opencv::highgui::{self, WINDOW_FULLSCREEN};
 use opencv::core::{Mat, Vector, VecN, Size, CV_8UC3,};
@@ -150,7 +152,8 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
     return Ok(());
 }
 
-fn etch_bw(source: &mut EmbedSource, data: &[bool], global_index: &mut usize) {
+fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
+        -> anyhow::Result<()> {
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -173,12 +176,19 @@ fn etch_bw(source: &mut EmbedSource, data: &[bool], global_index: &mut usize) {
             //Increment index so we move along the data
             *global_index += 1;
 
+            if *global_index >= data.len() - 1 {
+                return Err(Error::msg("Index beyond data"));
+            }
+
             etch_pixel(source, rgb, x, y).unwrap();
         }
     }
+
+    return Ok(());
 }
 
-fn etch_color(source: &mut EmbedSource, data: &[u8], global_index: &mut usize) {
+fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize) 
+        -> anyhow::Result<()>{
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -196,9 +206,15 @@ fn etch_color(source: &mut EmbedSource, data: &[u8], global_index: &mut usize) {
             //Increment index so we move along the data
             *global_index += 3;
 
+            if *global_index+2 >= data.len() - 1 {
+                return Err(Error::msg("Index beyond data"));
+            }
+
             etch_pixel(source, rgb, x, y).unwrap();
         }
     }
+
+    return Ok(());
 }
 
 fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize) 
@@ -407,43 +423,84 @@ fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(Ou
     return Ok((out_mode, settings));
 }
 
-fn summon_etch_thread() -> anyhow::Result<()> {
-
-
-    return Ok(());
-}
-
 pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
-    let mut frames = Vec::new();
-    let mut index: usize = 0;
-
+    let mut spool = Vec::new();
     match data.out_mode {
         OutputMode::Color => {
             let length = data.bytes.len();
             let chunk_size = (length / settings.threads) + 1;
 
-            for chunk in data.bytes.chunks(chunk_size) {
-                dbg!(chunk.len());
+            //UGLY DUPING
+            let chunks = data.bytes.chunks(chunk_size);
+            for chunk in chunks {
+                //source of perf loss ?
+                let mut chunk_copy = Vec::new();
+                chunk_copy.copy_from_slice(chunk);
+
+                let thread = thread::spawn(move || {
+                    let mut frames = Vec::new();
+                    let mut index: usize = 0;
+
+                    loop {
+                        // let _timer = Timer::new("Etching frame");
+                        let mut source = EmbedSource::new(settings.size, settings.width, settings.height);
+                        match etch_color(&mut source, &chunk_copy, &mut index) {
+                            Ok(_) => frames.push(source),
+                            Err(v) => {
+                                frames.push(source);
+                                println!("Reached the end of data");
+                                break;}, 
+                        }
+                    }
+
+                    return frames;
+                });
+
+                spool.push(thread);
             }
-            return Ok(());
         },
-        OutputMode::Binary => {},
+        OutputMode::Binary => {
+            let length = data.binary.len();
+            let chunk_size = (length / settings.threads) + 1;
+
+            //UGLY DUPING
+            let chunks = data.binary.chunks(chunk_size);
+            for chunk in chunks {
+                //source of perf loss ?
+                let chunk_copy = chunk.to_vec();
+
+                let thread = thread::spawn(move || {
+                    let mut frames = Vec::new();
+                    let mut index: usize = 0;
+
+                    loop {
+                        // let _timer = Timer::new("Etching frame");
+                        let mut source = EmbedSource::new(settings.size, settings.width, settings.height);
+                        match etch_bw(&mut source, &chunk_copy, &mut index) {
+                            Ok(_) => frames.push(source),
+                            Err(v) => {
+                                frames.push(source);
+                                println!("Reached the end of data");
+                                break;}, 
+                        }
+                    }
+
+                    return frames;
+                });
+
+                spool.push(thread);
+            }
+        },
     }
 
-    let instructional_frame = etch_instructions(&settings, &data)?;
-    frames.push(instructional_frame);
+    let mut complete_frames = Vec::new();
 
-    loop {
-        // dbg!("Looped!");
-        // let _timer = Timer::new("Etching frame");
-        let mut source = EmbedSource::new(settings.size, settings.width, settings.height);
-        match etch_frame(&mut source, &data, &mut index) {
-            Ok(_) => frames.push(source),
-            Err(v) => {
-                frames.push(source);
-                println!("Reached the end of data");
-                break;}, 
-        }
+    let instructional_frame = etch_instructions(&settings, &data)?;
+    complete_frames.push(instructional_frame);
+
+    for thread in spool {
+        let frame_chunk = thread.join().unwrap();
+        complete_frames.extend(frame_chunk);
     }
 
     //Mess around with lossless codecs, png seems fine
@@ -451,11 +508,11 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
     
     //Check if frame_size is flipped
-    let frame_size = frames[1].frame_size;
+    let frame_size = complete_frames[1].frame_size;
     let mut video = VideoWriter::new(path, fourcc, settings.fps, frame_size, true)?;
 
     //Putting them in vector might be slower
-    for frame in frames {
+    for frame in complete_frames {
         let image = frame.image;
         video.write(&image)?;
     }
