@@ -154,6 +154,8 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
         -> anyhow::Result<()> {
+    let _timer = Timer::new("Etching frame");
+    
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -189,6 +191,7 @@ fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize)
 
 fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize) 
         -> anyhow::Result<()>{
+
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -213,72 +216,6 @@ fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize
             etch_pixel(source, rgb, x, y).unwrap();
         }
     }
-
-    return Ok(());
-}
-
-fn etch_frame(source: &mut EmbedSource, data: &Data, global_index: &mut usize) 
-        -> anyhow::Result<()>{
-    
-    let width = source.actual_size.width;
-    let height = source.actual_size.height;
-    let size = source.size as usize;
-
-    for y in (0..height).step_by(size) {
-        for x in (0..width).step_by(size) {
-            // dbg!(&global_index);
-            let local_index = global_index.clone();
-
-            let rgb = match data.out_mode {
-                OutputMode::Color => {
-                    let colors = vec![
-                        data.bytes[local_index],  //Red
-                        data.bytes[local_index+1],//Green
-                        data.bytes[local_index+2] //Blue
-                    ];
-                    //Increment index so we move along the data
-                    *global_index += 3;
-
-                    //Hopefully this doesn't affect og ?
-                    if *global_index+2 >= data.bytes.len() - 1 {
-                        return Err(Error::msg("Index beyond data"));
-                    }
-
-                    colors
-                },
-                OutputMode::Binary => {
-                    let brightness = if data.binary[local_index] == true {
-                        255 // 1
-                    } else {
-                        0   // 0
-                    };
-                    let colors = vec![
-                        brightness,
-                        brightness,
-                        brightness,
-                    ];
-
-                    //Increment index so we move along the data
-                    *global_index += 1;
-
-                    //Hopefully this doesn't affect og ?
-                    if *global_index >= data.binary.len() - 1 {
-                        return Err(Error::msg("Index beyond data"));
-                    }
-
-                    colors
-                }
-            };
-            etch_pixel(source, rgb, x, y).unwrap();
-        }
-    }
-
-    // dbg!(&source.image.cols(), &source.image.rows());
-    // highgui::named_window("window", WINDOW_FULLSCREEN)?;
-    // highgui::imshow("window", &source.image)?;
-    // highgui::wait_key(10000000)?;
-
-    // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
 
     return Ok(());
 }
@@ -368,9 +305,8 @@ fn etch_instructions(settings: &Settings, data: &Data)
     //Could choke and die
     u8_instructions.push(settings.size as u8);
     u8_instructions.push(settings.fps as u8);
-    let mut binary_instructions = rip_binary(u8_instructions)?;
-    binary_instructions.extend(last_byte_pointer);
-    let instruction_data = Data::from_binary(binary_instructions);
+    let mut instruction_data = rip_binary(u8_instructions)?;
+    instruction_data.extend(last_byte_pointer);
 
     //Here to make sure instruction frame and the rest are of the same size
     //Using EmbedSource::new() in case it changes and this code becomes disconnected from the rest
@@ -380,7 +316,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
 
     let mut source = EmbedSource::new(instruction_size, settings.width, settings.height);
     let mut index = 0;
-    match etch_frame(&mut source, &instruction_data, &mut index) {
+    match etch_bw(&mut source, &instruction_data, &mut index) {
         Ok(_) => {},
         Err(_) => {println!("Instructions written")}
     }
@@ -424,6 +360,8 @@ fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(Ou
 }
 
 pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
+    let _timer = Timer::new("Etching video");
+    
     let mut spool = Vec::new();
     match data.out_mode {
         OutputMode::Color => {
@@ -434,15 +372,13 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
             let chunks = data.bytes.chunks(chunk_size);
             for chunk in chunks {
                 //source of perf loss ?
-                let mut chunk_copy = Vec::new();
-                chunk_copy.copy_from_slice(chunk);
+                let chunk_copy = chunk.to_vec();
 
                 let thread = thread::spawn(move || {
                     let mut frames = Vec::new();
                     let mut index: usize = 0;
 
                     loop {
-                        // let _timer = Timer::new("Etching frame");
                         let mut source = EmbedSource::new(settings.size, settings.width, settings.height);
                         match etch_color(&mut source, &chunk_copy, &mut index) {
                             Ok(_) => frames.push(source),
@@ -474,7 +410,6 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
                     let mut index: usize = 0;
 
                     loop {
-                        // let _timer = Timer::new("Etching frame");
                         let mut source = EmbedSource::new(settings.size, settings.width, settings.height);
                         match etch_bw(&mut source, &chunk_copy, &mut index) {
                             Ok(_) => frames.push(source),
@@ -506,6 +441,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     //Mess around with lossless codecs, png seems fine
     //Fourcc is a code for video codecs, trying to use a lossless one
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
+    // let fourcc = VideoWriter::fourcc('a', 'v', 'c', '1')?;
     
     //Check if frame_size is flipped
     let frame_size = complete_frames[1].frame_size;
