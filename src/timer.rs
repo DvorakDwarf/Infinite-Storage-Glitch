@@ -8,7 +8,15 @@ pub struct Timer {
 
 impl Drop for Timer {
     fn drop(&mut self) {
-        println!("{} ended in {}ms", self.title, self.time.elapsed().as_millis());
+        let micros = self.time.elapsed().as_micros();
+        let millis = self.time.elapsed().as_millis();
+
+        if micros < 10000 {
+            println!("{} ended in {}us", self.title, self.time.elapsed().as_micros());
+        } else {
+            println!("{} ended in {}ms", self.title, self.time.elapsed().as_millis());
+        }
+        
     }
 }
 

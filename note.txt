@@ -23,6 +23,9 @@ u32 instructions
 Add standard loadout
 
 1. Multithreading
+    Embedding
+    Reading
+1.5 Add final frame + pixel pointer to instruction
 2. Find optimization tool
 3. Optimize
 4. u32/u64 instructions

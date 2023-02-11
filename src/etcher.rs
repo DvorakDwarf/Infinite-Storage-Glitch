@@ -154,7 +154,7 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
         -> anyhow::Result<()> {
-    let _timer = Timer::new("Etching frame");
+    // let _timer = Timer::new("Etching frame");
     
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -452,6 +452,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     //Mess around with lossless codecs, png seems fine
     //Fourcc is a code for video codecs, trying to use a lossless one
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
+    // let fourcc = VideoWriter::fourcc('j', 'p', 'e', 'g')?;
     // let fourcc = VideoWriter::fourcc('a', 'v', 'c', '1')?;
     
     //Check if frame_size is flipped
