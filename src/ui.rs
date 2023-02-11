@@ -79,7 +79,7 @@ fn embed_path()  -> anyhow::Result<()> {
         .unwrap();
 
     let path = Text::new("What is the path to your file ?")
-    .with_default("src/tests/Baby.wav")
+    .with_default("src/tests/test.txt")
     .prompt().unwrap();
 
     let (width, height) = match resolution {
@@ -144,7 +144,7 @@ fn dislodge_path()  -> anyhow::Result<()> {
         .prompt().unwrap();
 
     let out_path = Text::new("Where should the output go ?")
-        .with_default("output.wav")
+        .with_default("output.txt")
         .with_help_message("Please include name of file and extension")
         .prompt().unwrap();
 

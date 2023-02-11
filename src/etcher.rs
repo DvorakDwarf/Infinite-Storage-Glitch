@@ -306,6 +306,8 @@ fn etch_instructions(settings: &Settings, data: &Data)
     u8_instructions.push(settings.size as u8);
     u8_instructions.push(settings.fps as u8);
     let mut instruction_data = rip_binary(u8_instructions)?;
+    //Instead of putting entire size of file, add at which frame and pixel file ends
+    //Saves space on instruction frame
     instruction_data.extend(last_byte_pointer);
 
     //Here to make sure instruction frame and the rest are of the same size
@@ -366,13 +368,18 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     match data.out_mode {
         OutputMode::Color => {
             let length = data.bytes.len();
+
+            //Required so that data is continuous between each thread
             let chunk_size = (length / settings.threads) + 1;
+            let frame_size = (settings.width * settings.height) as usize * 3;
+            let chunk_size = chunk_size / frame_size * frame_size + frame_size;
 
             //UGLY DUPING
             let chunks = data.bytes.chunks(chunk_size);
             for chunk in chunks {
                 //source of perf loss ?
-                let chunk_copy = chunk.to_vec();
+                dbg!(chunk.len());
+                let chunk_copy = chunk.to_vec();                
 
                 let thread = thread::spawn(move || {
                     let mut frames = Vec::new();
@@ -397,7 +404,11 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         },
         OutputMode::Binary => {
             let length = data.binary.len();
+
+            //Required so that data is continuous between each thread
             let chunk_size = (length / settings.threads) + 1;
+            let frame_size = (settings.width * settings.height) as usize;
+            let chunk_size = chunk_size / frame_size * frame_size + frame_size;
 
             //UGLY DUPING
             let chunks = data.binary.chunks(chunk_size);
@@ -494,3 +505,32 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     println!("Video read succesfully");
     return Ok(byte_data);
 }
+
+// pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
+//     let instruction_size = 5;
+
+//     let mut video = VideoCapture::from_file(&path, CAP_ANY)
+//             .expect("Could not open video path");
+//     let mut frame = Mat::default();
+
+//     //Could probably avoid cloning
+//     video.read(&mut frame)?;
+//     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
+//     let (out_mode, settings) = read_instructions(&instruction_source, threads)?;
+
+//     let mut frames = Vec::new();
+//     loop {
+//         // let _timer = Timer::new("Reading frame  (clone included)");
+//         video.read(&mut frame)?;
+
+//         //If it reads an empty image, the video stopped
+//         if frame.cols() == 0 {
+//             break;
+//         }
+
+//         frames.push(frame.clone())
+//     }
+
+//     println!("Video read succesfully");
+//     return Ok(Vec::new());
+// }
