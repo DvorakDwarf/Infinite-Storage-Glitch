@@ -73,24 +73,27 @@ fn translate_binary(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
 }
 
 //Bit of a waste
-pub fn rip_binary_u64(byte: u64) -> anyhow::Result<Vec<bool>> {
+pub fn rip_binary_u32(bytes: Vec<u32>) -> anyhow::Result<Vec<bool>> {
     let mut binary_data: Vec<bool> = Vec::new();
 
-    let mut bits = format!("{:b}", byte);
-    let missing_0 = 64 - bits.len();
+    for byte in bytes {
+        let mut bits = format!("{:b}", byte);
+        let missing_0 = 32 - bits.len();
 
-    //Adding the missing 0's, could be faster
-    for _ in 0..missing_0 {
-        bits.insert(0, '0');
-    }
+        //Adding the missing 0's, could be faster
+        for _ in 0..missing_0 {
+            bits.insert(0, '0');
+        }
 
-    for bit in bits.chars() {
-        if bit == '1' {
-            binary_data.push(true);
-        } else {
-            binary_data.push(false);
+        for bit in bits.chars() {
+            if bit == '1' {
+                binary_data.push(true);
+            } else {
+                binary_data.push(false);
+            }
         }
     }
+
     return Ok(binary_data);
 }
 
@@ -288,33 +291,53 @@ fn etch_instructions(settings: &Settings, data: &Data)
         -> anyhow::Result<EmbedSource> {
     let instruction_size = 5;
     
-    let mut u8_instructions: Vec<u8> = Vec::new();
+    let mut u32_instructions: Vec<u32> = Vec::new();
     
-    //Both adds the output mode to instructions and finds last byte
-    let last_byte_pointer = match data.out_mode {
+    //calculating at what frame and pixel the file ends
+    let frame_size = (settings.height * settings.width) as usize;
+
+    //Adds the output mode to instructions
+    //Instead of putting entire size of file, add at which frame and pixel file ends
+    //Saves space on instruction frame
+    match data.out_mode {
         OutputMode::Color => {
-            u8_instructions.push(255);
-            rip_binary_u64(data.bytes.len() as u64)?
+            u32_instructions.push(u32::MAX);
+
+            let final_byte = data.bytes.len() % frame_size;
+            let pixel_length = (data.bytes.len() as f64 / 3.).ceil() as i32;
+            let pixel_length = (pixel_length * settings.size.pow(2)) as usize;
+            let mut final_frame = pixel_length / frame_size;
+
+            if pixel_length % frame_size != 0 {
+                final_frame += 1;
+            }
+
+            dbg!(final_frame, final_byte);
+
+            u32_instructions.push(final_frame as u32);
+            u32_instructions.push(final_byte as u32);
         },
         OutputMode::Binary => {
-            u8_instructions.push(0);
-            rip_binary_u64(data.binary.len() as u64)?
+            u32_instructions.push(u32::MIN);
+
+            let final_byte = data.binary.len() % frame_size;
+            let pixel_length = (data.binary.len() as i32 * settings.size.pow(2)) as usize;
+            let mut final_frame = pixel_length / frame_size;
+
+            if pixel_length % frame_size != 0 {
+                final_frame += 1;
+            }
+
+            dbg!(final_frame, final_byte);
+
+            u32_instructions.push(final_frame as u32);
+            u32_instructions.push(final_byte as u32);
         },
     };
 
-    //Could choke and die
-    u8_instructions.push(settings.size as u8);
-    u8_instructions.push(settings.fps as u8);
-    let mut instruction_data = rip_binary(u8_instructions)?;
-    //Instead of putting entire size of file, add at which frame and pixel file ends
-    //Saves space on instruction frame
-    instruction_data.extend(last_byte_pointer);
+    u32_instructions.push(settings.size as u32);
 
-    //Here to make sure instruction frame and the rest are of the same size
-    //Using EmbedSource::new() in case it changes and this code becomes disconnected from the rest
-    // let dummy = EmbedSource::new(settings.size, settings.width, settings.height);
-    // let width = dummy.width;
-    // let height = dummy.height;
+    let instruction_data = rip_binary_u32(u32_instructions)?;
 
     let mut source = EmbedSource::new(instruction_size, settings.width, settings.height);
     let mut index = 0;
@@ -323,11 +346,11 @@ fn etch_instructions(settings: &Settings, data: &Data)
         Err(_) => {println!("Instructions written")}
     }
 
-    // highgui::named_window("window", WINDOW_FULLSCREEN)?;
-    // highgui::imshow("window", &source.image)?;
-    // highgui::wait_key(10000000)?;
+    highgui::named_window("window", WINDOW_FULLSCREEN)?;
+    highgui::imshow("window", &source.image)?;
+    highgui::wait_key(10000000)?;
 
-    // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
+    imwrite("src/out/test1.png", &source.image, &Vector::new())?;
 
     return Ok(source);
 }
