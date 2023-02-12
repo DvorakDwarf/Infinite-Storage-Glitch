@@ -50,7 +50,7 @@ pub fn rip_binary(byte_data: Vec<u8>) -> anyhow::Result<Vec<bool>> {
     return Ok(binary_data);
 }
 
-fn translate_binary(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
+fn translate_u8(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
     let mut buffer: Vec<bool> = Vec::new();
     let mut byte_data: Vec<u8> = Vec::new();
 
@@ -60,15 +60,29 @@ fn translate_binary(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
         if buffer.len() == 8 {
             //idk how this works but it does
             let byte = buffer.iter().fold(0u8, |v, b| (v << 1) + (*b as u8));
-            // dbg!(byte);
             byte_data.push(byte);
             buffer.clear();
         }
     }
 
-    // dbg!(binary_data.len());
-    // dbg!(buffer.len());
-    // dbg!(byte_data.len());
+    return Ok(byte_data);
+}
+
+fn translate_u32(binary_data: Vec<bool>) -> anyhow::Result<Vec<u32>>{
+    let mut buffer: Vec<bool> = Vec::new();
+    let mut byte_data: Vec<u32> = Vec::new();
+
+    for bit in binary_data {
+        buffer.push(bit);
+
+        if buffer.len() == 32 {
+            //idk how this works but it does
+            let u32_byte = buffer.iter().fold(0u32, |v, b| (v << 1) + (*b as u32));
+            byte_data.push(u32_byte);
+            buffer.clear();
+        }
+    }
+
     return Ok(byte_data);
 }
 
@@ -223,58 +237,54 @@ fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize
     return Ok(());
 }
 
-fn read_frame(source: &EmbedSource, out_mode: &OutputMode) -> anyhow::Result<Vec<u8>>{
-    // let _timer = Timer::new("Reading frame");
-    
+fn read_bw(source: &EmbedSource) -> anyhow::Result<Vec<bool>>{
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
 
-    // dbg!(width, height);
-
-    //Fix this nesting spiral
-    match out_mode {
-        OutputMode::Color => {
-            let mut byte_data: Vec<u8> = Vec::new();
-            for y in (0..height).step_by(size) {
-                for x in (0..width).step_by(size) {
-                    let rgb = get_pixel(&source, x, y);
-                    if rgb == None {
-                        continue;
-                    } else {
-                        let rgb = rgb.unwrap();
-                        byte_data.push(rgb[0]);
-                        byte_data.push(rgb[1]);
-                        byte_data.push(rgb[2]);
-                    }
+    let mut binary_data: Vec<bool> = Vec::new();
+    for y in (0..height).step_by(size) {
+        for x in (0..width).step_by(size) {
+            let rgb = get_pixel(&source, x, y);
+            if rgb == None {
+                continue;
+            } else {
+                let rgb = rgb.unwrap();
+                if rgb[0] >= 127 {
+                    binary_data.push(true);
+                } else {
+                    binary_data.push(false);
                 }
             }
-
-            return Ok(byte_data);
-        },
-        OutputMode::Binary => {
-            let mut binary_data: Vec<bool> = Vec::new();
-            for y in (0..height).step_by(size) {
-                for x in (0..width).step_by(size) {
-                    let rgb = get_pixel(&source, x, y);
-                    if rgb == None {
-                        continue;
-                    } else {
-                        let rgb = rgb.unwrap();
-                        if rgb[0] >= 127 {
-                            binary_data.push(true);
-                        } else {
-                            binary_data.push(false);
-                        }
-                    }
-                }
-            }
-            
-            let translated = translate_binary(binary_data)?;
-            return Ok(translated);
         }
     }
+    
+    return Ok(binary_data);
 }
+
+fn read_color(source: &EmbedSource) -> anyhow::Result<Vec<u8>>{
+    let width = source.actual_size.width;
+    let height = source.actual_size.height;
+    let size = source.size as usize;
+
+    let mut byte_data: Vec<u8> = Vec::new();
+    for y in (0..height).step_by(size) {
+        for x in (0..width).step_by(size) {
+            let rgb = get_pixel(&source, x, y);
+            if rgb == None {
+                continue;
+            } else {
+                let rgb = rgb.unwrap();
+                byte_data.push(rgb[0]);
+                byte_data.push(rgb[1]);
+                byte_data.push(rgb[2]);
+            }
+        }
+    }
+
+    return Ok(byte_data);
+}
+
 /*
 Instructions:
 Etched on first frame, always be wrtten in binary despite output mode
@@ -336,8 +346,13 @@ fn etch_instructions(settings: &Settings, data: &Data)
     };
 
     u32_instructions.push(settings.size as u32);
+    u32_instructions.push(u32::MAX); //For some reason size not readable without this
+
+    dbg!(&u32_instructions);
+    dbg!(settings.size);
 
     let instruction_data = rip_binary_u32(u32_instructions)?;
+    dbg!(instruction_data.len());
 
     let mut source = EmbedSource::new(instruction_size, settings.width, settings.height);
     let mut index = 0;
@@ -346,42 +361,39 @@ fn etch_instructions(settings: &Settings, data: &Data)
         Err(_) => {println!("Instructions written")}
     }
 
-    highgui::named_window("window", WINDOW_FULLSCREEN)?;
-    highgui::imshow("window", &source.image)?;
-    highgui::wait_key(10000000)?;
-
-    imwrite("src/out/test1.png", &source.image, &Vector::new())?;
-
-    return Ok(source);
-}
-
-fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(OutputMode, Settings)> {
     // highgui::named_window("window", WINDOW_FULLSCREEN)?;
     // highgui::imshow("window", &source.image)?;
     // highgui::wait_key(10000000)?;
 
     // imwrite("src/out/test1.png", &source.image, &Vector::new())?;
-    
-    let byte_data = read_frame(source, &OutputMode::Binary)?;
-    // dbg!(&byte_data);
 
-    let out_mode = byte_data[0];
+    return Ok(source);
+}
+
+fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(OutputMode, i32, i32, Settings)> {  
+    let binary_data = read_bw(source)?;
+    let u32_data = translate_u32(binary_data)?;
+    // dbg!(&u32_data);
+
+    let out_mode = u32_data[0];
 
     let out_mode = match out_mode {
-        255 => OutputMode::Color,
+        u32::MAX => OutputMode::Color,
         _ => OutputMode::Binary,
     };
 
-    let size = byte_data[1] as i32;
-    let fps = byte_data[2] as i32;
-    //FUck up ?
+    let final_frame = u32_data[1] as i32;
+    let final_byte = u32_data[2] as i32;
+    let size = u32_data[3] as i32;
+
     let height = source.frame_size.height;
     let width = source.frame_size.width;
 
-    let settings = Settings::new(size, threads, fps, width, height);
+    let settings = Settings::new(size, threads, 1337, width, height);
     
-    // println!("Output mode is: {}\nsize is: {}\nfps is: {}", out_mode, size, fps);
-    return Ok((out_mode, settings));
+    dbg!(final_frame, final_byte);
+    dbg!(&settings);
+    return Ok((out_mode, final_frame, final_byte, settings));
 }
 
 pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
@@ -504,7 +516,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     //Could probably avoid cloning
     video.read(&mut frame)?;
     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
-    let (out_mode, settings) = read_instructions(&instruction_source, threads)?;
+    let (out_mode, final_frame, final_byte, settings) = read_instructions(&instruction_source, threads)?;
 
     let mut frames: Vec<Mat> = Vec::new();
     loop {
@@ -532,7 +544,17 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
 
             for frame in chunk_copy {
                 let source = EmbedSource::from(frame, settings.size);
-                let frame_data = read_frame(&source, &out_mode).unwrap();
+
+                let frame_data = match out_mode {
+                    OutputMode::Color => {
+                        read_color(&source).unwrap()
+                    },
+                    OutputMode::Binary => {
+                        let binary_data = read_bw(&source).unwrap();
+                        translate_u8(binary_data).unwrap()
+                    }
+                };
+
                 byte_data.extend(frame_data);
             }
 
