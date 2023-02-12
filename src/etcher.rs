@@ -483,7 +483,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
     let (out_mode, settings) = read_instructions(&instruction_source, threads)?;
 
-    let mut byte_data: Vec<u8> = Vec::new();
+    let mut frames: Vec<Mat> = Vec::new();
     loop {
         // let _timer = Timer::new("Reading frame  (clone included)");
         video.read(&mut frame)?;
@@ -493,45 +493,39 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
             break;
         }
 
-        //Passing Data might speed up
-        //CLONING, AAAAAAAAAAAAAA
-        //Massive slow down vvv
-        let source = EmbedSource::from(frame.clone(), settings.size);
-        // let batch = read_frame2(&source, &out_mode)?;
-        //TEMPORARY
-        let batch = read_frame(&source, &out_mode)?;
-        byte_data.extend(batch);
+        frames.push(frame.clone());
+    }
+
+    //Required so that data is continuous between each thread
+    let chunk_size = (frames.len() / settings.threads) + 1;
+
+    let mut spool = Vec::new();
+    let chunks = frames.chunks(chunk_size);
+    for chunk in chunks {
+        let chunk_copy = chunk.to_vec();
+
+        let thread = thread::spawn(move || {
+            let mut byte_data = Vec::new();
+
+            for frame in chunk_copy {
+                let source = EmbedSource::from(frame, settings.size);
+                let frame_data = read_frame(&source, &out_mode).unwrap();
+                byte_data.extend(frame_data);
+            }
+
+            println!("Thread complete!");
+            return byte_data;
+        });
+
+        spool.push(thread);
+    }
+
+    let mut complete_data = Vec::new();
+    for thread in spool {
+        let byte_chunk = thread.join().unwrap();
+        complete_data.extend(byte_chunk);
     }
 
     println!("Video read succesfully");
-    return Ok(byte_data);
+    return Ok(complete_data);
 }
-
-// pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
-//     let instruction_size = 5;
-
-//     let mut video = VideoCapture::from_file(&path, CAP_ANY)
-//             .expect("Could not open video path");
-//     let mut frame = Mat::default();
-
-//     //Could probably avoid cloning
-//     video.read(&mut frame)?;
-//     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
-//     let (out_mode, settings) = read_instructions(&instruction_source, threads)?;
-
-//     let mut frames = Vec::new();
-//     loop {
-//         // let _timer = Timer::new("Reading frame  (clone included)");
-//         video.read(&mut frame)?;
-
-//         //If it reads an empty image, the video stopped
-//         if frame.cols() == 0 {
-//             break;
-//         }
-
-//         frames.push(frame.clone())
-//     }
-
-//     println!("Video read succesfully");
-//     return Ok(Vec::new());
-// }
