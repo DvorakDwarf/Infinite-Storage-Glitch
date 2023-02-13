@@ -22,6 +22,22 @@ u32 instructions
     Convert every instruction to u32
 Add standard loadout
 
+MULTITHREADING bug
+    A couple of bytes in each file are off
+    It is always the same places
+    The amount changes as there are more Threads
+    The amount of errors varies depending on file
+    Might have something to do with the fact there are still extra bits
+    Check difference between reading multithreading and writing
+    Possibly issue of attaching thread data
+    Check where the messed up bytes are
+    jpg errors = n_threads
+    txt errors = n_threads -1 until. Ends at 7 errors
+    png errors = weird
+    ^^Do these change based on individual files ?
+    check if length is the same
+    Possibly last byte stop counting prematurely ? Check amount of binary data at the end
+
 1. Multithreading
     Embedding
     Reading
@@ -35,6 +51,8 @@ Add standard loadout
 8. Help Luna with Inflation Monopoly
 9. Encryption
 10. Fix weird bug ?
+
+
 
 
 

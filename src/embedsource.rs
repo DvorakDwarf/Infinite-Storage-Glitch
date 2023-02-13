@@ -19,6 +19,11 @@ impl EmbedSource {
         let actual_size = Size::new(actual_width, actual_height);
 
         // dbg!(actual_size);
+        // dbg!(frame_size);
+
+        // if actual_height != height {
+        //     panic!("Height bug");
+        // }
 
         //WHy does this have to be unsafe smh
         unsafe {

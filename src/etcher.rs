@@ -50,6 +50,30 @@ pub fn rip_binary(byte_data: Vec<u8>) -> anyhow::Result<Vec<bool>> {
     return Ok(binary_data);
 }
 
+pub fn rip_binary_u32(bytes: Vec<u32>) -> anyhow::Result<Vec<bool>> {
+    let mut binary_data: Vec<bool> = Vec::new();
+
+    for byte in bytes {
+        let mut bits = format!("{:b}", byte);
+        let missing_0 = 32 - bits.len();
+
+        //Adding the missing 0's, could be faster
+        for _ in 0..missing_0 {
+            bits.insert(0, '0');
+        }
+
+        for bit in bits.chars() {
+            if bit == '1' {
+                binary_data.push(true);
+            } else {
+                binary_data.push(false);
+            }
+        }
+    }
+
+    return Ok(binary_data);
+}
+
 fn translate_u8(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
     let mut buffer: Vec<bool> = Vec::new();
     let mut byte_data: Vec<u8> = Vec::new();
@@ -60,6 +84,7 @@ fn translate_u8(binary_data: Vec<bool>) -> anyhow::Result<Vec<u8>>{
         if buffer.len() == 8 {
             //idk how this works but it does
             let byte = buffer.iter().fold(0u8, |v, b| (v << 1) + (*b as u8));
+
             byte_data.push(byte);
             buffer.clear();
         }
@@ -84,31 +109,6 @@ fn translate_u32(binary_data: Vec<bool>) -> anyhow::Result<Vec<u32>>{
     }
 
     return Ok(byte_data);
-}
-
-//Bit of a waste
-pub fn rip_binary_u32(bytes: Vec<u32>) -> anyhow::Result<Vec<bool>> {
-    let mut binary_data: Vec<bool> = Vec::new();
-
-    for byte in bytes {
-        let mut bits = format!("{:b}", byte);
-        let missing_0 = 32 - bits.len();
-
-        //Adding the missing 0's, could be faster
-        for _ in 0..missing_0 {
-            bits.insert(0, '0');
-        }
-
-        for bit in bits.chars() {
-            if bit == '1' {
-                binary_data.push(true);
-            } else {
-                binary_data.push(false);
-            }
-        }
-    }
-
-    return Ok(binary_data);
 }
 
 pub fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
@@ -237,7 +237,7 @@ fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize
     return Ok(());
 }
 
-fn read_bw(source: &EmbedSource) -> anyhow::Result<Vec<bool>>{
+fn read_bw(source: &EmbedSource, current_frame: i32, final_frame: i32, final_bit: i32) -> anyhow::Result<Vec<bool>>{
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -258,11 +258,18 @@ fn read_bw(source: &EmbedSource) -> anyhow::Result<Vec<bool>>{
             }
         }
     }
+
+    //Cut off nasty bits at the end
+    if current_frame == final_frame { 
+        let slice = binary_data[0..final_bit as usize].to_vec();
+        return Ok(slice)
+    }
     
+    // dbg!(binary_data.len());
     return Ok(binary_data);
 }
 
-fn read_color(source: &EmbedSource) -> anyhow::Result<Vec<u8>>{
+fn read_color(source: &EmbedSource, current_frame: i32, final_frame: i32, final_byte: i32) -> anyhow::Result<Vec<u8>>{
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -280,6 +287,12 @@ fn read_color(source: &EmbedSource) -> anyhow::Result<Vec<u8>>{
                 byte_data.push(rgb[2]);
             }
         }
+    }
+
+    //Cut off nasty bits at the end
+    if current_frame == final_frame { 
+        let slice = byte_data[0..final_byte as usize].to_vec();
+        return Ok(slice)
     }
 
     return Ok(byte_data);
@@ -305,6 +318,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
     
     //calculating at what frame and pixel the file ends
     let frame_size = (settings.height * settings.width) as usize;
+    dbg!(frame_size);
 
     //Adds the output mode to instructions
     //Instead of putting entire size of file, add at which frame and pixel file ends
@@ -313,16 +327,14 @@ fn etch_instructions(settings: &Settings, data: &Data)
         OutputMode::Color => {
             u32_instructions.push(u32::MAX);
 
-            let final_byte = data.bytes.len() % frame_size;
-            let pixel_length = (data.bytes.len() as f64 / 3.).ceil() as i32;
-            let pixel_length = (pixel_length * settings.size.pow(2)) as usize;
-            let mut final_frame = pixel_length / frame_size;
+            let frame_data_size = frame_size / settings.size.pow(2) as usize;
+            let final_byte = data.bytes.len() % frame_data_size;
+            let mut final_frame = data.bytes.len() / frame_data_size;
 
-            if pixel_length % frame_size != 0 {
+            //In case of edge case where frame is right on the money
+            if data.bytes.len() % frame_size != 0 {
                 final_frame += 1;
             }
-
-            dbg!(final_frame, final_byte);
 
             u32_instructions.push(final_frame as u32);
             u32_instructions.push(final_byte as u32);
@@ -330,15 +342,14 @@ fn etch_instructions(settings: &Settings, data: &Data)
         OutputMode::Binary => {
             u32_instructions.push(u32::MIN);
 
-            let final_byte = data.binary.len() % frame_size;
-            let pixel_length = (data.binary.len() as i32 * settings.size.pow(2)) as usize;
-            let mut final_frame = pixel_length / frame_size;
+            let frame_data_size = frame_size / settings.size.pow(2) as usize;
+            let final_byte = data.binary.len() % frame_data_size;
+            let mut final_frame = data.binary.len() / frame_data_size;
 
-            if pixel_length % frame_size != 0 {
+            //In case of edge case where frame is right on the money
+            if data.binary.len() % frame_size != 0 {
                 final_frame += 1;
             }
-
-            dbg!(final_frame, final_byte);
 
             u32_instructions.push(final_frame as u32);
             u32_instructions.push(final_byte as u32);
@@ -371,7 +382,8 @@ fn etch_instructions(settings: &Settings, data: &Data)
 }
 
 fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(OutputMode, i32, i32, Settings)> {  
-    let binary_data = read_bw(source)?;
+    //UGLY
+    let binary_data = read_bw(source, 0, 1, 0)?;
     let u32_data = translate_u32(binary_data)?;
     // dbg!(&u32_data);
 
@@ -531,29 +543,40 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
         frames.push(frame.clone());
     }
 
+    dbg!(frames.len());
+
     //Required so that data is continuous between each thread
     let chunk_size = (frames.len() / settings.threads) + 1;
 
     let mut spool = Vec::new();
     let chunks = frames.chunks(chunk_size);
+    //Can get rid of final_frame because of this
     for chunk in chunks {
         let chunk_copy = chunk.to_vec();
+        //Checks if this is final thread
+        let final_frame = if spool.len() == settings.threads - 1 {
+            chunk_copy.len() as i32
+        } else {
+            -1
+        };
 
         let thread = thread::spawn(move || {
             let mut byte_data = Vec::new();
+            let mut current_frame = 1;
 
             for frame in chunk_copy {
                 let source = EmbedSource::from(frame, settings.size);
 
                 let frame_data = match out_mode {
                     OutputMode::Color => {
-                        read_color(&source).unwrap()
+                        read_color(&source, current_frame, final_frame, final_byte).unwrap()
                     },
                     OutputMode::Binary => {
-                        let binary_data = read_bw(&source).unwrap();
+                        let binary_data = read_bw(&source, current_frame, final_frame, final_byte).unwrap();
                         translate_u8(binary_data).unwrap()
                     }
                 };
+                current_frame += 1;
 
                 byte_data.extend(frame_data);
             }
