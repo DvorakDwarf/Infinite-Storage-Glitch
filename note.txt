@@ -10,47 +10,24 @@ Zip all the files
 WHAT TO DO ON THE ISG:
 Optimize:
     Find a tool for optimization
-    GET RID OF THAT FUCKING CLONE (Doesn't matter much)
-    Multithreading (thread # agnostic)
     Threads with HQ or set of designated frames ?
     Consider whether Data is still useful
     Choose a different codec ?
     What if I use a compressing codec ?
-u32 instructions
-    Might still be not enough, idk
-    Used for end-of-file pointers
-    Convert every instruction to u32
 Add standard loadout
 
-MULTITHREADING bug
-    A couple of bytes in each file are off
-    It is always the same places
-    The amount changes as there are more Threads
-    The amount of errors varies depending on file
-    Might have something to do with the fact there are still extra bits
-    Check difference between reading multithreading and writing
-    Possibly issue of attaching thread data
-    Check where the messed up bytes are
-    jpg errors = n_threads
-    txt errors = n_threads -1 until. Ends at 7 errors
-    png errors = weird
-    ^^Do these change based on individual files ?
-    check if length is the same
-    Possibly last byte stop counting prematurely ? Check amount of binary data at the end
+Realistic goals:
+    1.Standard sets of options
+    2.Test with archives
+    3.Benchmark
+    4.Make executable
+    5.Post to github and shill
 
-1. Multithreading
-    Embedding
-    Reading
-1.5 Add final frame + pixel pointer to instruction
-2. Find optimization tool
-3. Optimize
-4. u32/u64 instructions
-5. Standard set of options
-6. Test with .zip and .rar
-7. Post to github and shill
-8. Help Luna with Inflation Monopoly
-9. Encryption
-10. Fix weird bug ?
+After-project:
+    Optimize (Find optimization tool)
+    Encryption (Kind of unnecessary given archive passwords)
+    Fix weird bug
+    Code clean-up
 
 
 

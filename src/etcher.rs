@@ -172,7 +172,7 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
         -> anyhow::Result<()> {
     // let _timer = Timer::new("Etching frame");
-    
+
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -192,14 +192,14 @@ fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize)
                 brightness,
             ];
 
+            //Actually embeds the data
+            etch_pixel(source, rgb, x, y).unwrap();
+
             //Increment index so we move along the data
             *global_index += 1;
-
-            if *global_index >= data.len() - 1 {
+            if *global_index >= data.len() {
                 return Err(Error::msg("Index beyond data"));
             }
-
-            etch_pixel(source, rgb, x, y).unwrap();
         }
     }
 
@@ -318,7 +318,6 @@ fn etch_instructions(settings: &Settings, data: &Data)
     
     //calculating at what frame and pixel the file ends
     let frame_size = (settings.height * settings.width) as usize;
-    dbg!(frame_size);
 
     //Adds the output mode to instructions
     //Instead of putting entire size of file, add at which frame and pixel file ends
@@ -359,11 +358,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
     u32_instructions.push(settings.size as u32);
     u32_instructions.push(u32::MAX); //For some reason size not readable without this
 
-    dbg!(&u32_instructions);
-    dbg!(settings.size);
-
     let instruction_data = rip_binary_u32(u32_instructions)?;
-    dbg!(instruction_data.len());
 
     let mut source = EmbedSource::new(instruction_size, settings.width, settings.height);
     let mut index = 0;
@@ -403,8 +398,6 @@ fn read_instructions(source: &EmbedSource, threads: usize) -> anyhow::Result<(Ou
 
     let settings = Settings::new(size, threads, 1337, width, height);
     
-    dbg!(final_frame, final_byte);
-    dbg!(&settings);
     return Ok((out_mode, final_frame, final_byte, settings));
 }
 
@@ -416,6 +409,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         OutputMode::Color => {
             let length = data.bytes.len();
 
+            //let frame_data_size = frame_size / settings.size.pow(2) as usize;
             //Required so that data is continuous between each thread
             let chunk_size = (length / settings.threads) + 1;
             let frame_size = (settings.width * settings.height) as usize * 3;
@@ -425,7 +419,6 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
             let chunks = data.bytes.chunks(chunk_size);
             for chunk in chunks {
                 //source of perf loss ?
-                dbg!(chunk.len());
                 let chunk_copy = chunk.to_vec();                
 
                 let thread = thread::spawn(move || {
@@ -452,13 +445,16 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         OutputMode::Binary => {
             let length = data.binary.len();
 
+            //UGLY
             //Required so that data is continuous between each thread
-            let chunk_size = (length / settings.threads) + 1;
             let frame_size = (settings.width * settings.height) as usize;
-            let chunk_size = chunk_size / frame_size * frame_size + frame_size;
+            let frame_data_size = frame_size / settings.size.pow(2) as usize; 
+            let frame_length = length / frame_data_size;
+            let chunk_frame_size = (frame_length / settings.threads) + 1;
+            let chunk_data_size = chunk_frame_size * frame_data_size;
 
             //UGLY DUPING
-            let chunks = data.binary.chunks(chunk_size);
+            let chunks = data.binary.chunks(chunk_data_size);
             for chunk in chunks {
                 //source of perf loss ?
                 let chunk_copy = chunk.to_vec();
@@ -473,7 +469,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
                             Ok(_) => frames.push(source),
                             Err(v) => {
                                 frames.push(source);
-                                println!("Reached the end of data");
+                                println!("Embedding thread complete!");
                                 break;}, 
                         }
                     }
@@ -543,8 +539,6 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
         frames.push(frame.clone());
     }
 
-    dbg!(frames.len());
-
     //Required so that data is continuous between each thread
     let chunk_size = (frames.len() / settings.threads) + 1;
 
@@ -581,7 +575,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
                 byte_data.extend(frame_data);
             }
 
-            println!("Thread complete!");
+            println!("Dislodging thread complete!");
             return byte_data;
         });
 
