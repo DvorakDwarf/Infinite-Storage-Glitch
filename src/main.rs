@@ -20,9 +20,6 @@ async fn main() -> anyhow::Result<()> {
     println!("5. Use the dislodge option to get your files back from the downloaded video");
     println!("6. PROFIT. Enjoy being a leech on a huge corporation's servers");
 
-    println!("\nI coudln't figure out a weird bug that happens if you set the size to something that isn't a factor of the height");
-    println!("If you don't want the files you put in to come out as the audio/visual equivalent of a pipe bomb, account for the above bug\n");
-
     ui::summon_gooey().await?;
     // let bytes = etcher::rip_bytes("src/tests/Baby.wav")?;
     // let binary = etcher::rip_binary(bytes)?;

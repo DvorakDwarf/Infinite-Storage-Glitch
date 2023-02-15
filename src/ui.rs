@@ -32,9 +32,9 @@ fn embed_path()  -> anyhow::Result<()> {
 
     //Should use enums
     let presets = vec![
-        "Maximum efficiency",
         "Optimal compression resistance",
         "Paranoid compression resistance",
+        "Maximum efficiency",
         "Custom"
     ];
 
@@ -101,6 +101,9 @@ fn embed_path()  -> anyhow::Result<()> {
         .with_help_message("Colored mode is useless if the video undergoes compression at any point, B/W survives compression")
         .prompt()
         .unwrap();
+
+    println!("\nI coudln't figure out a weird bug that happens if you set the size to something that isn't a factor of the height");
+    println!("If you don't want the files you put in to come out as the audio/visual equivalent of a pipe bomb, account for the above bug\n");
 
     let size = CustomType::<i32>::new("What size should the blocks be ?")
         .with_error_message("Please type a valid number")
