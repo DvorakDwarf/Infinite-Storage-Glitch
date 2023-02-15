@@ -30,6 +30,18 @@ After-project:
     Fix weird bug
     Code clean-up
 
+Benchmark notes:
+430 kb/s average, 4x size, optimal resistance
+320 kb/s average, 11x-12x size, paranoid resistance
+31.9 mb/s average, 1x size, maximum efficiency
+(A lot of this time is just creating the file after the frames are made)
+
+~8.5ms per frame, optimal resistance
+~5.8ms per frame, paranoid resistance
+~0.16ms per frame, maximum efficiency
+
+Probably faster on paranoid because it has to read less ?
+
 
 
 
