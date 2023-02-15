@@ -171,7 +171,7 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
         -> anyhow::Result<()> {
-    // let _timer = Timer::new("Etching frame");
+    let _timer = Timer::new("Etching frame");
 
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -208,6 +208,7 @@ fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize)
 
 fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize) 
         -> anyhow::Result<()>{
+    let _timer = Timer::new("Etching frame");
 
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -335,6 +336,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
                 final_frame += 1;
             }
 
+            dbg!(final_frame);
             u32_instructions.push(final_frame as u32);
             u32_instructions.push(final_byte as u32);
         },
@@ -350,6 +352,7 @@ fn etch_instructions(settings: &Settings, data: &Data)
                 final_frame += 1;
             }
 
+            dbg!(final_frame);
             u32_instructions.push(final_frame as u32);
             u32_instructions.push(final_byte as u32);
         },

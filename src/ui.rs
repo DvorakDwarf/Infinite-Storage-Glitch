@@ -88,7 +88,7 @@ fn embed_path()  -> anyhow::Result<()> {
             let binary = etcher::rip_binary(bytes)?;
 
             let data = Data::from_binary(binary);
-            let settings = Settings::new(4, 8, 10, 1280, 720);
+            let settings = Settings::new(4, 8, 30, 1280, 720);
 
             etcher::etch("output.avi", data, settings)?;
 

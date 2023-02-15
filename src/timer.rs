@@ -12,9 +12,9 @@ impl Drop for Timer {
         let millis = self.time.elapsed().as_millis();
 
         if micros < 10000 {
-            println!("{} ended in {}us", self.title, self.time.elapsed().as_micros());
+            println!("{} ended in {}us", self.title, micros);
         } else {
-            println!("{} ended in {}ms", self.title, self.time.elapsed().as_millis());
+            println!("{} ended in {}ms", self.title, millis);
         }
         
     }
