@@ -18,6 +18,7 @@ Add standard loadout
 
 Realistic goals:
     1.Standard sets of options
+        Fix weird bug with size 3 and empty bits
     2.Test with archives
     3.Benchmark
     4.Make executable

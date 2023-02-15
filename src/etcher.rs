@@ -223,14 +223,14 @@ fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize
                 data[local_index+1],//Green
                 data[local_index+2] //Blue
                 ];
-            //Increment index so we move along the data
-            *global_index += 3;
-
-            if *global_index+2 >= data.len() - 1 {
-                return Err(Error::msg("Index beyond data"));
-            }
 
             etch_pixel(source, rgb, x, y).unwrap();
+
+            //Increment index so we move along the data
+            *global_index += 3;
+            if *global_index+2 >= data.len() {
+                return Err(Error::msg("Index beyond data"));
+            }
         }
     }
 
@@ -409,17 +409,19 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         OutputMode::Color => {
             let length = data.bytes.len();
 
-            //let frame_data_size = frame_size / settings.size.pow(2) as usize;
+            //UGLY
             //Required so that data is continuous between each thread
-            let chunk_size = (length / settings.threads) + 1;
-            let frame_size = (settings.width * settings.height) as usize * 3;
-            let chunk_size = chunk_size / frame_size * frame_size + frame_size;
+            let frame_size = (settings.width * settings.height) as usize;
+            let frame_data_size = frame_size / settings.size.pow(2) as usize * 3; 
+            let frame_length = length / frame_data_size;
+            let chunk_frame_size = (frame_length / settings.threads) + 1;
+            let chunk_data_size = chunk_frame_size * frame_data_size;
 
             //UGLY DUPING
-            let chunks = data.bytes.chunks(chunk_size);
+            let chunks = data.bytes.chunks(chunk_data_size);
             for chunk in chunks {
                 //source of perf loss ?
-                let chunk_copy = chunk.to_vec();                
+                let chunk_copy = chunk.to_vec();
 
                 let thread = thread::spawn(move || {
                     let mut frames = Vec::new();
@@ -431,7 +433,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
                             Ok(_) => frames.push(source),
                             Err(v) => {
                                 frames.push(source);
-                                println!("Reached the end of data");
+                                println!("Embedding thread complete!");
                                 break;}, 
                         }
                     }
