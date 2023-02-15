@@ -29,6 +29,15 @@ pub async fn summon_gooey() -> anyhow::Result<()> {
 
 
 fn embed_path()  -> anyhow::Result<()> {
+
+    //Should use enums
+    let presets = vec![
+        "Maximum efficiency",
+        "Optimal compression resistance",
+        "Paranoid compression resistance",
+        "Custom"
+    ];
+
     let out_modes = vec![
         "Colored",
         "B/W (Binary)",
@@ -41,6 +50,51 @@ fn embed_path()  -> anyhow::Result<()> {
         "480p",
         "720p",
     ];
+
+    let path = Text::new("What is the path to your file ?")
+    .with_default("src/tests/test.txt")
+    .prompt().unwrap();
+
+    let preset = Select::new("You can use one of the existing presets or custom settings", presets.clone())
+        .with_help_message("Any amount of compression on Maximum Efficiency will corrupt all your hopes and dreams")
+        .prompt()
+        .unwrap();
+
+    match preset {
+        "Maximum efficiency" => {
+            let bytes = etcher::rip_bytes(&path)?;
+
+            let data = Data::from_color(bytes);
+            let settings = Settings::new(1, 8, 30, 1280, 720);
+
+            etcher::etch("output.avi", data, settings)?;
+
+            return Ok(());
+        },
+        "Optimal compression resistance" => {
+            let bytes = etcher::rip_bytes(&path)?;
+            let binary = etcher::rip_binary(bytes)?;
+
+            let data = Data::from_binary(binary);
+            let settings = Settings::new(2, 8, 30, 1280, 720);
+
+            etcher::etch("output.avi", data, settings)?;
+
+            return Ok(());
+        },
+        "Paranoid compression resistance" => {
+            let bytes = etcher::rip_bytes(&path)?;
+            let binary = etcher::rip_binary(bytes)?;
+
+            let data = Data::from_binary(binary);
+            let settings = Settings::new(3, 8, 10, 640, 360);
+
+            etcher::etch("output.avi", data, settings)?;
+
+            return Ok(());
+        },
+        _ => (),
+    }
 
     let out_mode = Select::new("Pick how data will be embedded", out_modes.clone())
         .with_help_message("Colored mode is useless if the video undergoes compression at any point, B/W survives compression")
@@ -77,10 +131,6 @@ fn embed_path()  -> anyhow::Result<()> {
         .with_help_message("I recommend 720p as the resolution won't affect compression")
         .prompt()
         .unwrap();
-
-    let path = Text::new("What is the path to your file ?")
-    .with_default("src/tests/test.txt")
-    .prompt().unwrap();
 
     let (width, height) = match resolution {
         "144p" => (256, 144),
