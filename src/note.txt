@@ -1,38 +1,14 @@
-FPS matters more and more with increasing resolution
-Weird stuff under 10fps
-size 1 = data corruption
-size 2-5 works
-cargo build --release
-720p had less crunchy sound, what about 144p ?
-I tried again and I don't think resolution matters
-Zip all the files
-
-WHAT TO DO ON THE ISG:
-Optimize:
-    Find a tool for optimization
-    Threads with HQ or set of designated frames ?
-    Consider whether Data is still useful
-    Choose a different codec ?
-    What if I use a compressing codec ?
-Add standard loadout
-
-Realistic goals:
-    1.Standard sets of options
-        Fix weird bug with size 3 and empty bits
-    2.Test with archives
-    3.Benchmark
-    4.Make executable
-    5.Post to github and shill
-
-After-project:
+After-project ideas:
+    Code clean-up
     Optimize (Find optimization tool)
     Encryption (Kind of unnecessary given archive passwords)
     Fix weird bug
-    Code clean-up
 
-Benchmark notes:
-430 kb/s average, 4x size, optimal resistance
-320 kb/s average, 11x-12x size, paranoid resistance
+Benchmark notes (Tested on an M1 macbook):
+
+Embed speed:
+450 kb/s average, 4x size, optimal resistance
+350 kb/s average, 11x-12x size, paranoid resistance
 31.9 mb/s average, 1x size, maximum efficiency
 (A lot of this time is just creating the file after the frames are made)
 
