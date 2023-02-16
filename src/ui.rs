@@ -114,7 +114,7 @@ fn embed_path()  -> anyhow::Result<()> {
     let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
         .with_error_message("Please type a valid number")
         .with_help_message("The more threads, the merrier")
-        .with_default(4)
+        .with_default(8)
         .prompt()?;
 
     let out_mode = match out_mode {
@@ -205,7 +205,7 @@ fn dislodge_path()  -> anyhow::Result<()> {
     let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
         .with_error_message("Please type a valid number")
         .with_help_message("The more threads, the merrier")
-        .with_default(4)
+        .with_default(8)
         .prompt()?;
 
     let out_data = etcher::read(&in_path, threads)?;
