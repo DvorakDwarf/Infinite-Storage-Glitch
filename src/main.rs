@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
     println!("3. Upload the video to your YouTube channel. You probably want to keep it up as unlisted");
     println!("4. Use the download option to get the video back");
     println!("5. Use the dislodge option to get your files back from the downloaded video");
-    println!("6. PROFIT. Enjoy being a leech on a huge corporation's servers\n");
+    println!("6. PROFIT\n");
 
     ui::summon_gooey().await?;
 
