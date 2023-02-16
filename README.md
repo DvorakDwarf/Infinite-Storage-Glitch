@@ -4,11 +4,13 @@ I was working on this instead of my finals, hope you appreciate it
 
 WIP
 
-[add gif of an embed here]
+[add gif of an embed here, don't forget tags]
 
 AKA ISG (written entirely in Rust my beloved) lets you embed files into video and upload them to youtube as storage.
 
 YouTube has no limit on amount of video that you can upload. This means that it is effectively infinite cloud storage if you were able to embed files into video with some kind of tool. ISG is the tool.
+
+This has been quite heavily inspired by suckerpinch's [Harder Drive](https://www.youtube.com/watch?v=JcJSW7Rprio) video. Unfortunately no file system functionality as of right now
 
 # Now, you might be asking yourself:
 
