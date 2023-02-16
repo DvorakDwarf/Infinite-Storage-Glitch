@@ -239,6 +239,8 @@ fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize
 }
 
 fn read_bw(source: &EmbedSource, current_frame: i32, final_frame: i32, final_bit: i32) -> anyhow::Result<Vec<bool>>{
+    let _timer = Timer::new("Dislodging frame");
+    
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -271,6 +273,8 @@ fn read_bw(source: &EmbedSource, current_frame: i32, final_frame: i32, final_bit
 }
 
 fn read_color(source: &EmbedSource, current_frame: i32, final_frame: i32, final_byte: i32) -> anyhow::Result<Vec<u8>>{
+    let _timer = Timer::new("Dislodging frame");
+    
     let width = source.actual_size.width;
     let height = source.actual_size.height;
     let size = source.size as usize;
@@ -520,6 +524,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
 }
 
 pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
+    let _timer = Timer::new("Dislodging frame");
     let instruction_size = 5;
 
     let mut video = VideoCapture::from_file(&path, CAP_ANY)
