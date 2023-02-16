@@ -32,9 +32,9 @@ fn embed_path()  -> anyhow::Result<()> {
 
     //Should use enums
     let presets = vec![
-        "Maximum efficiency",
         "Optimal compression resistance",
         "Paranoid compression resistance",
+        "Maximum efficiency",
         "Custom"
     ];
 
@@ -88,7 +88,7 @@ fn embed_path()  -> anyhow::Result<()> {
             let binary = etcher::rip_binary(bytes)?;
 
             let data = Data::from_binary(binary);
-            let settings = Settings::new(4, 8, 10, 1280, 720);
+            let settings = Settings::new(4, 8, 30, 1280, 720);
 
             etcher::etch("output.avi", data, settings)?;
 
@@ -102,6 +102,9 @@ fn embed_path()  -> anyhow::Result<()> {
         .prompt()
         .unwrap();
 
+    println!("\nI coudln't figure out a weird bug that happens if you set the size to something that isn't a factor of the height");
+    println!("If you don't want the files you put in to come out as the audio/visual equivalent of a pipe bomb, account for the above bug\n");
+
     let size = CustomType::<i32>::new("What size should the blocks be ?")
         .with_error_message("Please type a valid number")
         .with_help_message("Bigger blocks are more resistant to compression, I recommend 2-5.")
@@ -111,7 +114,7 @@ fn embed_path()  -> anyhow::Result<()> {
     let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
         .with_error_message("Please type a valid number")
         .with_help_message("The more threads, the merrier")
-        .with_default(4)
+        .with_default(8)
         .prompt()?;
 
     let out_mode = match out_mode {
@@ -202,7 +205,7 @@ fn dislodge_path()  -> anyhow::Result<()> {
     let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
         .with_error_message("Please type a valid number")
         .with_help_message("The more threads, the merrier")
-        .with_default(4)
+        .with_default(8)
         .prompt()?;
 
     let out_data = etcher::read(&in_path, threads)?;
