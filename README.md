@@ -46,8 +46,10 @@ How to use
 
 Demo
 -------------
-**Flashing lights warning !!!1!1**
-[add demo video here]
+**Flashing lights warning !!!1!1** \
+https://www.youtube.com/watch?v=8I4fd_Sap-g
+
+Try to use the program on this video and find the files hidden inside. No it's not just a rick roll.
 
 Explanation 4 nerds
 -------------
