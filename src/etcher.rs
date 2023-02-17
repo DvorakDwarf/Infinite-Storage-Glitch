@@ -171,7 +171,7 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
         -> anyhow::Result<()> {
-    let _timer = Timer::new("Etching frame");
+    // let _timer = Timer::new("Etching frame");
 
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -208,7 +208,7 @@ fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize)
 
 fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize) 
         -> anyhow::Result<()>{
-    let _timer = Timer::new("Etching frame");
+    // let _timer = Timer::new("Etching frame");
 
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -239,7 +239,7 @@ fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize
 }
 
 fn read_bw(source: &EmbedSource, current_frame: i32, final_frame: i32, final_bit: i32) -> anyhow::Result<Vec<bool>>{
-    let _timer = Timer::new("Dislodging frame");
+    // let _timer = Timer::new("Dislodging frame");
     
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -273,7 +273,7 @@ fn read_bw(source: &EmbedSource, current_frame: i32, final_frame: i32, final_bit
 }
 
 fn read_color(source: &EmbedSource, current_frame: i32, final_frame: i32, final_byte: i32) -> anyhow::Result<Vec<u8>>{
-    let _timer = Timer::new("Dislodging frame");
+    // let _timer = Timer::new("Dislodging frame");
     
     let width = source.actual_size.width;
     let height = source.actual_size.height;
