@@ -2,11 +2,7 @@ I was working on this instead of my finals, hope you appreciate it
 
 # Infinite-Storage-Glitch
 
-WIP
-
 ![ezgif com-gif-maker](https://user-images.githubusercontent.com/96934612/219563410-7728447d-5482-41ae-a3ff-cf8446e16ab7.gif)
-
-[add gif of an embed here, don't forget tags]
 
 AKA ISG (written entirely in Rust my beloved) lets you embed files into video and upload them to youtube as storage.
 
@@ -44,6 +40,9 @@ How to use
 5. Use the download option to get the video back
 6. Use the dislodge option to get your files back from the downloaded video
 7. PROFIT
+
+![2023-02-16_22-12](https://user-images.githubusercontent.com/96934612/219563769-c05370e9-3f40-406a-85b8-eca14a118be8.png)
+
 
 Demo
 -------------
