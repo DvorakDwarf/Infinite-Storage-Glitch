@@ -4,7 +4,7 @@ I was working on this instead of my finals, hope you appreciate it
 
 WIP
 
-![1](https://user-images.githubusercontent.com/96934612/219562852-574bfb52-7179-4405-9e87-f050318172ab.gif)
+![ezgif com-gif-maker](https://user-images.githubusercontent.com/96934612/219563410-7728447d-5482-41ae-a3ff-cf8446e16ab7.gif)
 
 [add gif of an embed here, don't forget tags]
 
