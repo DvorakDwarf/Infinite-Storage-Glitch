@@ -6,11 +6,9 @@
 /output.txt
 /src/tests/morbius.webm
 /yt-dlp
-<<<<<<< HEAD
 /test.mp4
-=======
 /src/demo
 /src/tests/demo.zip
 /.DS_Store
 /src/.DS_Store
->>>>>>> 463b110dde30173b32b4390f65df0e26aa264976
+/test2.mp4
