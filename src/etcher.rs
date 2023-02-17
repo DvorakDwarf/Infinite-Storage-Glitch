@@ -171,7 +171,7 @@ fn etch_pixel(frame: &mut EmbedSource, rgb: Vec<u8>, x: i32, y: i32) -> anyhow::
 
 fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize) 
         -> anyhow::Result<()> {
-    // let _timer = Timer::new("Etching frame");
+    let _timer = Timer::new("Etching frame");
 
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -208,7 +208,7 @@ fn etch_bw(source: &mut EmbedSource, data: &Vec<bool>, global_index: &mut usize)
 
 fn etch_color(source: &mut EmbedSource, data: &Vec<u8>, global_index: &mut usize) 
         -> anyhow::Result<()>{
-    // let _timer = Timer::new("Etching frame");
+    let _timer = Timer::new("Etching frame");
 
     let width = source.actual_size.width;
     let height = source.actual_size.height;
@@ -536,7 +536,8 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
     let (out_mode, final_frame, final_byte, settings) = read_instructions(&instruction_source, threads)?;
 
-    let mut frames: Vec<Mat> = Vec::new();
+    let mut byte_data = Vec::new();
+    let mut current_frame = 1;
     loop {
         // let _timer = Timer::new("Reading frame  (clone included)");
         video.read(&mut frame)?;
@@ -546,58 +547,107 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
             break;
         }
 
-        frames.push(frame.clone());
-    }
+        if current_frame % 20 == 0 {
+            println!("On frame: {}", current_frame);
+        }
 
-    //Required so that data is continuous between each thread
-    let chunk_size = (frames.len() / settings.threads) + 1;
+        let source = EmbedSource::from(frame.clone(), settings.size);
 
-    let mut spool = Vec::new();
-    let chunks = frames.chunks(chunk_size);
-    //Can get rid of final_frame because of this
-    for chunk in chunks {
-        let chunk_copy = chunk.to_vec();
-        //Checks if this is final thread
-        let final_frame = if spool.len() == settings.threads - 1 {
-            chunk_copy.len() as i32
-        } else {
-            -1
+        let frame_data = match out_mode {
+            OutputMode::Color => {
+                read_color(&source, current_frame, 99999999, final_byte).unwrap()
+            },
+            OutputMode::Binary => {
+                let binary_data = read_bw(&source, current_frame, final_frame, final_byte).unwrap();
+                translate_u8(binary_data).unwrap()
+            }
         };
 
-        let thread = thread::spawn(move || {
-            let mut byte_data = Vec::new();
-            let mut current_frame = 1;
+        current_frame += 1;
 
-            for frame in chunk_copy {
-                let source = EmbedSource::from(frame, settings.size);
-
-                let frame_data = match out_mode {
-                    OutputMode::Color => {
-                        read_color(&source, current_frame, final_frame, final_byte).unwrap()
-                    },
-                    OutputMode::Binary => {
-                        let binary_data = read_bw(&source, current_frame, final_frame, final_byte).unwrap();
-                        translate_u8(binary_data).unwrap()
-                    }
-                };
-                current_frame += 1;
-
-                byte_data.extend(frame_data);
-            }
-
-            println!("Dislodging thread complete!");
-            return byte_data;
-        });
-
-        spool.push(thread);
-    }
-
-    let mut complete_data = Vec::new();
-    for thread in spool {
-        let byte_chunk = thread.join().unwrap();
-        complete_data.extend(byte_chunk);
+        byte_data.extend(frame_data);
     }
 
     println!("Video read succesfully");
-    return Ok(complete_data);
+    return Ok(byte_data);
 }
+
+//Uses literally all the RAM
+// pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
+//     let _timer = Timer::new("Dislodging frame");
+//     let instruction_size = 5;
+
+//     let mut video = VideoCapture::from_file(&path, CAP_ANY)
+//             .expect("Could not open video path");
+//     let mut frame = Mat::default();
+
+//     //Could probably avoid cloning
+//     video.read(&mut frame)?;
+//     let instruction_source = EmbedSource::from(frame.clone(), instruction_size);
+//     let (out_mode, final_frame, final_byte, settings) = read_instructions(&instruction_source, threads)?;
+
+//     let mut frames: Vec<Mat> = Vec::new();
+//     loop {
+//         // let _timer = Timer::new("Reading frame  (clone included)");
+//         video.read(&mut frame)?;
+
+//         //If it reads an empty image, the video stopped
+//         if frame.cols() == 0 {
+//             break;
+//         }
+
+//         frames.push(frame.clone());
+//     }
+
+//     //Required so that data is continuous between each thread
+//     let chunk_size = (frames.len() / settings.threads) + 1;
+
+//     let mut spool = Vec::new();
+//     let chunks = frames.chunks(chunk_size);
+//     //Can get rid of final_frame because of this
+//     for chunk in chunks {
+//         let chunk_copy = chunk.to_vec();
+//         //Checks if this is final thread
+//         let final_frame = if spool.len() == settings.threads - 1 {
+//             chunk_copy.len() as i32
+//         } else {
+//             -1
+//         };
+
+//         let thread = thread::spawn(move || {
+//             let mut byte_data = Vec::new();
+//             let mut current_frame = 1;
+
+//             for frame in chunk_copy {
+//                 let source = EmbedSource::from(frame, settings.size);
+
+//                 let frame_data = match out_mode {
+//                     OutputMode::Color => {
+//                         read_color(&source, current_frame, final_frame, final_byte).unwrap()
+//                     },
+//                     OutputMode::Binary => {
+//                         let binary_data = read_bw(&source, current_frame, final_frame, final_byte).unwrap();
+//                         translate_u8(binary_data).unwrap()
+//                     }
+//                 };
+//                 current_frame += 1;
+
+//                 byte_data.extend(frame_data);
+//             }
+
+//             println!("Dislodging thread complete!");
+//             return byte_data;
+//         });
+
+//         spool.push(thread);
+//     }
+
+//     let mut complete_data = Vec::new();
+//     for thread in spool {
+//         let byte_chunk = thread.join().unwrap();
+//         complete_data.extend(byte_chunk);
+//     }
+
+//     println!("Video read succesfully");
+//     return Ok(complete_data);
+// }

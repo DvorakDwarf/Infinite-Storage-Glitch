@@ -202,13 +202,13 @@ fn dislodge_path()  -> anyhow::Result<()> {
         .with_help_message("Please include name of file and extension")
         .prompt().unwrap();
 
-    let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
-        .with_error_message("Please type a valid number")
-        .with_help_message("The more threads, the merrier")
-        .with_default(8)
-        .prompt()?;
+    // let threads = CustomType::<usize>::new("How many threads to dedicate for processing ?")
+    //     .with_error_message("Please type a valid number")
+    //     .with_help_message("The more threads, the merrier")
+    //     .with_default(8)
+    //     .prompt()?;
 
-    let out_data = etcher::read(&in_path, threads)?;
+    let out_data = etcher::read(&in_path, 1)?;
     etcher::write_bytes(&out_path, out_data)?;
 
     return Ok(());
