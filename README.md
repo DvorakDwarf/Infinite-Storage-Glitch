@@ -4,6 +4,8 @@ I was working on this instead of my finals, hope you appreciate it
 
 WIP
 
+![1](https://user-images.githubusercontent.com/96934612/219562852-574bfb52-7179-4405-9e87-f050318172ab.gif)
+
 [add gif of an embed here, don't forget tags]
 
 AKA ISG (written entirely in Rust my beloved) lets you embed files into video and upload them to youtube as storage.
