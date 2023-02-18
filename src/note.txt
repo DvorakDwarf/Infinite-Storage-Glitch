@@ -1,4 +1,5 @@
 After-project ideas:
+    Fix
     Code clean-up
     Optimize (Find optimization tool)
     Encryption (Kind of unnecessary given archive passwords)
