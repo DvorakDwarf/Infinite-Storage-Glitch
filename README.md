@@ -13,7 +13,7 @@ This has been quite heavily inspired by suckerpinch's [Harder Drive](https://www
 # Now, you might be asking yourself:
 
 <details>
-<summary><b>But is this legal ?</b></summary>
+<summary><b>But is this against TOS ?</b></summary>
 <b>Maybe ?</b>
 
 I doubt there is any part of the TOS saying that you can't upload videos containing files, but I also did not want to shovel through all the legalese. I still don't condone using this tool for anything serious/large. YouTube might understandably get mad.
