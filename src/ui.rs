@@ -66,7 +66,7 @@ fn embed_path()  -> anyhow::Result<()> {
 
             let data = Data::from_color(bytes);
             // let settings = Settings::new(1, 8, 1, 640, 360);
-            let settings = Settings::new(1, 8, 30, 256, 144);
+            let settings = Settings::new(1, 8, 10, 256, 144);
 
             etcher::etch("output.avi", data, settings)?;
 
@@ -77,7 +77,7 @@ fn embed_path()  -> anyhow::Result<()> {
             let binary = etcher::rip_binary(bytes)?;
 
             let data = Data::from_binary(binary);
-            let settings = Settings::new(2, 8, 30, 1280, 720);
+            let settings = Settings::new(2, 8, 10, 1280, 720);
 
             etcher::etch("output.avi", data, settings)?;
 
@@ -88,7 +88,7 @@ fn embed_path()  -> anyhow::Result<()> {
             let binary = etcher::rip_binary(bytes)?;
 
             let data = Data::from_binary(binary);
-            let settings = Settings::new(4, 8, 30, 1280, 720);
+            let settings = Settings::new(4, 8, 10, 1280, 720);
 
             etcher::etch("output.avi", data, settings)?;
 
@@ -198,7 +198,6 @@ fn dislodge_path()  -> anyhow::Result<()> {
         .prompt().unwrap();
 
     let out_path = Text::new("Where should the output go ?")
-        .with_default("output.txt")
         .with_help_message("Please include name of file and extension")
         .prompt().unwrap();
 
