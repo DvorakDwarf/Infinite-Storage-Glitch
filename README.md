@@ -25,11 +25,15 @@ Installation
   
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release``` and run the program. Probably better in case I forget to update the executable.
 
+You will most likely need to install opencv and possibly ffmpeg.
+
 <b>The easier way:</b>
 1. Download the executable from the releases 
 2. Place the executable inside a folder
 3. Run the executable
 4. Enjoy
+
+The binary is not an exe file, it will not work on windows, try following the first method instead.
 
 How to use
 -------------
