@@ -33,7 +33,8 @@ You will most likely need to install opencv and possibly ffmpeg.
 3. Run the executable
 4. Enjoy
 
-The binary is not an exe file, it will not work on windows, try following the first method instead.
+The binary is not an exe file, it will not work on windows, try following the first method instead.\
+I might add an .exe if this somehow gets popular
 
 How to use
 -------------
