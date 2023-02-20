@@ -25,6 +25,8 @@ Installation
 -------------
 <b>Recommended way:</b>
   
+You need to have Rust installed and opencv
+  
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release``` and run the program. Probably better in case I forget to update the executable.
 
 You will most likely need to install opencv and possibly ffmpeg.
