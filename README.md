@@ -23,20 +23,20 @@ I doubt there is any part of the TOS saying that you can't upload videos contain
 
 # Installation
 **Recommended way (building from source):**\
-*Please note: building from source takes **a lot of CPU and RAM** usage.*\
+=== *Please note: building from source takes **a lot of CPU and RAM** usage.* ===\
 You need to have installed:
 - [Rust](https://www.rust-lang.org/tools/install) 
 - [opencv](https://github.com/twistedfall/opencv-rust)
-- possibly ffmpeg
+If having any issues also try installing [ffmpeg](https://ffmpeg.org/).
 
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
-Then cd to `/target/release` directory and run the program `./isg_4real`.
+Cd to `/target/release` directory and run the program `./isg_4real`.
 
 <b>The easier way:</b>
 1. Download the executable from the releases 
 2. Place the executable inside a folder
 3. Open terminal inside the directory
-4. `chmod +x nameOftheFile`
+4. `chmod +x isg_4real`
 5. Run the executable: `./isg_4real`
 6. Enjoy!
 
@@ -59,16 +59,18 @@ How to use
 # Demo
 **Flashing lights warning !!!1!1** - [YouTube Link](https://www.youtube.com/watch?v=8I4fd_Sap-g)
 
-Try to use the program on this video and find the files hidden inside. No it's not just a rick roll.
+Try to use the program on this video and find the files hidden inside.
+
+***No it's not just a rick roll.***
 
 Explanation 4 nerds
 -------------
 The principle behind this is pretty simple. All files are made of bytes and bytes can be interpreted as numbers ranging from 1-255. This number can be represented with pixels using one of two modes: RGB or binary.
 
-RGB:
+**RGB**:
 The cooler mode. Every byte perfectly fits inside one of the colors of an rgb pixel. One rgb pixel can contain 3 bytes at a time. You just keep adding pixels like this until you run out of data. It is leagues more efficient and quick than binary.
 
-Binary:
+**Binary**:
 Born from YouTube compression being absolutely brutal. RGB mode is very sensitive to compression as a change in even one point of one of the colors of one of the pixels dooms the file to corruption. Black and white pixels are a lot harder to mess up. Every pixel is either bright representing a 1 or dark representing a 0. We string these bits together to get bytes and continue until we run out of data. 
 
 Both of these modes can be corrupted by compression, so we need to increase the size of the pixels to make it less compressable. 2x2 blocks of pixels seem to be good enough in binary mode.
