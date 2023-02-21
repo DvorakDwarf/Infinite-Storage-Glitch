@@ -27,6 +27,7 @@ I doubt there is any part of the TOS saying that you can't upload videos contain
 You need to have installed:
 - [Rust](https://www.rust-lang.org/tools/install) 
 - [opencv](https://github.com/twistedfall/opencv-rust)
+
 If having any issues also try installing [ffmpeg](https://ffmpeg.org/).
 
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
