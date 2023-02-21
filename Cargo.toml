@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.68"
+clap = {version = "4.1.6", features = ["derive"]}
 inquire = "0.5.3"
 opencv = "0.75.0"
 tokio = {version = "1.24.2", features = ["full"]}
