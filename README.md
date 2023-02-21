@@ -22,20 +22,22 @@ I doubt there is any part of the TOS saying that you can't upload videos contain
 </details>
 
 # Installation
-**Recommended way:**\
+**Recommended way (building from source):**\
+*Please note: building from source takes **a lot of CPU and RAM** usage.*\
 You need to have installed:
 - [Rust](https://www.rust-lang.org/tools/install) 
-- [opencv]()
+- [opencv](https://github.com/twistedfall/opencv-rust)
 - possibly ffmpeg
-  
-If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release``` and run the program. ***Probably better in case I forget to update the executable.***
+
+If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
+Then cd to `/target/release` directory and run the program `./isg_4real`.
 
 <b>The easier way:</b>
 1. Download the executable from the releases 
 2. Place the executable inside a folder
 3. Open terminal inside the directory
 4. `chmod +x nameOftheFile`
-5. Run the executable: `./isg_4real.v1.0.0`
+5. Run the executable: `./isg_4real`
 6. Enjoy!
 
 Note that the binary **is not an exe file**, it will not work on windows, try following the first method instead.\
@@ -54,8 +56,7 @@ How to use
 ![2023-02-16_22-12](https://user-images.githubusercontent.com/96934612/219563769-c05370e9-3f40-406a-85b8-eca14a118be8.png)
 
 
-Demo
--------------
+# Demo
 **Flashing lights warning !!!1!1** - [YouTube Link](https://www.youtube.com/watch?v=8I4fd_Sap-g)
 
 Try to use the program on this video and find the files hidden inside. No it's not just a rick roll.
