@@ -1,4 +1,4 @@
-I was working on this instead of my finals, hope you appreciate it
+#### I was working on this instead of my finals, hope you appreciate it.
 
 # Infinite-Storage-Glitch
 
@@ -16,18 +16,20 @@ If you are having trouble with the program please dm me.
 
 <details>
 <summary><b>But is this against TOS ?</b></summary>
-<b>Maybe ?</b>
+<b>Asnwer is:</b> maybe?
 
 I doubt there is any part of the TOS saying that you can't upload videos containing files, but I also did not want to shovel through all the legalese. I still don't condone using this tool for anything serious/large. YouTube might understandably get mad.
 </details>
 
 Installation
 -------------
-<b>Recommended way:</b>
+## Recommended way:
+You need to have installed:
+- [Rust]() 
+- [opencv]()
+- possibly ffmpeg
   
-You need to have Rust installed and opencv, possibly ffmpeg
-  
-If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release``` and run the program. Probably better in case I forget to update the executable.
+If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release``` and run the program. ***Probably better in case I forget to update the executable.***
 
 <b>The easier way:</b>
 1. Download the executable from the releases 
@@ -35,12 +37,12 @@ If you want to or already have went through the hassle of installing Rust, you c
 3. Run the executable
 4. Enjoy
 
-The binary is not an exe file, it will not work on windows, try following the first method instead.\
+Note that the binary **is not an exe file**, it will not work on windows, try following the first method instead.\
 I might add an .exe if this somehow gets popular
 
 How to use
 -------------
-1. Zip all the files you will be uploading
+1. Archive to zip all the files you will be uploading
 2. Run the executable
 3. Use the embed option on the archive (**THE VIDEO WILL BE SEVERAL TIMES LARGER THAN THE FILE**, 4x in case of optimal compression resistance preset)
 4. Upload the video to your YouTube channel. You probably want to keep it up as unlisted
@@ -53,8 +55,7 @@ How to use
 
 Demo
 -------------
-**Flashing lights warning !!!1!1** \
-https://www.youtube.com/watch?v=8I4fd_Sap-g
+**Flashing lights warning !!!1!1** - [YouTube Link](https://www.youtube.com/watch?v=8I4fd_Sap-g)
 
 Try to use the program on this video and find the files hidden inside. No it's not just a rick roll.
 
