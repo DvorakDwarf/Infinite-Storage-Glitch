@@ -24,7 +24,7 @@ I doubt there is any part of the TOS saying that you can't upload videos contain
 # Installation
 **Recommended way:**\
 You need to have installed:
-- [Rust]() 
+- [Rust](https://www.rust-lang.org/tools/install) 
 - [opencv]()
 - possibly ffmpeg
   
@@ -33,8 +33,10 @@ If you want to or already have went through the hassle of installing Rust, you c
 <b>The easier way:</b>
 1. Download the executable from the releases 
 2. Place the executable inside a folder
-3. Run the executable
-4. Enjoy
+3. Open terminal inside the directory
+4. `chmod +x nameOftheFile`
+5. Run the executable: `./isg_4real.v1.0.0`
+6. Enjoy!
 
 Note that the binary **is not an exe file**, it will not work on windows, try following the first method instead.\
 I might add an .exe if this somehow gets popular
