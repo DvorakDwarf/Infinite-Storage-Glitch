@@ -21,9 +21,8 @@ If you are having trouble with the program please dm me.
 I doubt there is any part of the TOS saying that you can't upload videos containing files, but I also did not want to shovel through all the legalese. I still don't condone using this tool for anything serious/large. YouTube might understandably get mad.
 </details>
 
-Installation
--------------
-## Recommended way:
+# Installation
+**Recommended way:**\
 You need to have installed:
 - [Rust]() 
 - [opencv]()
