@@ -102,7 +102,7 @@ fn embed_path()  -> anyhow::Result<()> {
         .prompt()
         .unwrap();
 
-    println!("\nI coudln't figure out a weird bug that happens if you set the size to something that isn't a factor of the height");
+    println!("\nI couldn't figure out a weird bug that happens if you set the size to something that isn't a factor of the height");
     println!("If you don't want the files you put in to come out as the audio/visual equivalent of a pipe bomb, account for the above bug\n");
 
     let size = CustomType::<i32>::new("What size should the blocks be ?")
