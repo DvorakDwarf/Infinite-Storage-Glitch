@@ -68,7 +68,7 @@ Try to use the program on this video and find the files hidden inside.
 
 Explanation 4 nerds
 -------------
-The principle behind this is pretty simple. All files are made of bytes and bytes can be interpreted as numbers ranging from 1-255. This number can be represented with pixels using one of two modes: RGB or binary.
+The principle behind this is pretty simple. All files are made of bytes and bytes can be interpreted as numbers ranging from 0-255. This number can be represented with pixels using one of two modes: RGB or binary.
 
 **RGB**:
 The cooler mode. Every byte perfectly fits inside one of the colors of an rgb pixel. One rgb pixel can contain 3 bytes at a time. You just keep adding pixels like this until you run out of data. It is leagues more efficient and quick than binary.
