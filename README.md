@@ -86,3 +86,7 @@ I will come back to this project a bit later after I work on something else
 I appreciate any and all roasting of the code so I can improve.
 
 Do what you want with the code, but credit would be much appreciated and if you have any trouble with ISG, please contact me over discord.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=DvorakDwarf/Infinite-Storage-Glitch&type=Date)](https://star-history.com/#DvorakDwarf/Infinite-Storage-Glitch&Date)
