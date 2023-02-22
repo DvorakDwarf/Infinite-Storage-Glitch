@@ -20,7 +20,7 @@ If you are having trouble with the program please dm me.
 <summary><b>But is this against TOS ?</b></summary>
 <b>Answer is:</b> maybe?
 
-I doubt there is any part of the TOS saying that you can't upload videos containing files, but I also did not want to shovel through all the legalese. I still don't condone using this tool for anything serious/large. YouTube might understandably get mad.
+I doubt there's a part of the TOS that says you can't upload videos that contain files, but regardless, YouTube's policies prohibit spam. I don't advise using this tool for anything serious/large. YouTube might understandably get mad, even though the videos might be private.
 </details>
 
 # Installation
