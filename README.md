@@ -10,8 +10,6 @@ AKA ISG (written entirely in Rust my beloved) lets you embed files into video an
 
 YouTube has no limit on amount of video that you can upload. This means that it is effectively infinite cloud storage if you were able to embed files into video with some kind of tool. ISG is the tool.
 
-A niche use case mentioned is using the program to link files to videos. If you have a tutorial and it requires some files you can leave a link to a video containing the files for viewers to download. The risk is still on you if YouTube doesn't like it and I would not recommend trying this. 
-
 This has been quite heavily inspired by suckerpinch's [Harder Drive](https://www.youtube.com/watch?v=JcJSW7Rprio) video and [discord as a filesystem](https://github.com/pixelomer/discord-fs). Unfortunately no filesystem functionality as of right now.
 
 If you are having trouble with the program please dm me.
@@ -91,6 +89,8 @@ Both of these modes can be corrupted by compression, so we need to increase the 
 To make it easier on the user, we also include all the relevant settings used to create the video on the first frame of the video. This allows the program to know what mode the video is in and what size to use in order to avoid making the user remember.
 
 # Final comments
+A niche use case mentioned is using the program to link files to videos. If you have a tutorial and it requires some files you can leave a link to a video containing the files for viewers to download. The risk is still on you if YouTube doesn't like it and I would not recommend trying this. 
+
 I will come back to this project a bit later after I work on something else
 
 I appreciate any and all roasting of the code so I can improve.
