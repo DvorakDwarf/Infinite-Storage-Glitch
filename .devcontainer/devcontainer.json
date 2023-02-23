@@ -1,0 +1,13 @@
+{
+    "name": "Rust",
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile",
+        "args": {
+            "VARIANT": "1",
+            "NODE_VERSION": "none"
+        }
+    },
+    "postCreateCommand": "cargo build",
+    "remoteUser": "vscode"
+}
