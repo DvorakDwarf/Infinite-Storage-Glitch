@@ -519,11 +519,20 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     //Fourcc is a code for video codecs, trying to use a lossless one
     let fourcc = VideoWriter::fourcc('p', 'n', 'g', ' ')?;
     // let fourcc = VideoWriter::fourcc('j', 'p', 'e', 'g')?;
-    // let fourcc = VideoWriter::fourcc('a', 'v', 'c', '1')?;
 
     //Check if frame_size is flipped
     let frame_size = complete_frames[1].frame_size;
-    let mut video = VideoWriter::new(path, fourcc, settings.fps, frame_size, true)?;
+    let video = VideoWriter::new(path, fourcc, settings.fps, frame_size, true);
+
+    //Use different codec if png failed
+    let mut video = match video {
+        Ok(v) => v,
+        Err(_) => {
+            let fourcc = VideoWriter::fourcc('a', 'v', 'c', '1')?;
+            VideoWriter::new(path, fourcc, settings.fps, frame_size, true)
+                .expect("Both png and avc1 codecs failed, please raise an issue on github")
+        }
+    };
 
     //Putting them in vector might be slower
     for frame in complete_frames {
@@ -541,12 +550,14 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     let _timer = Timer::new("Dislodging frame");
     let instruction_size = 5;
 
-    let mut video = VideoCapture::from_file(&path, CAP_ANY).expect("Could not open video path");
+    let mut video = VideoCapture::from_file(&path, CAP_ANY)
+        .expect("Could not open video path");
     let mut frame = Mat::default();
 
     //Could probably avoid cloning
     video.read(&mut frame)?;
-    let instruction_source = EmbedSource::from(frame.clone(), instruction_size).expect("Couldn't create instructions");
+    let instruction_source = EmbedSource::from(frame.clone(), instruction_size)
+        .expect("Couldn't create instructions");
     let (out_mode, final_frame, final_byte, settings) =
         read_instructions(&instruction_source, threads)?;
 
@@ -565,7 +576,8 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
             println!("On frame: {}", current_frame);
         }
 
-        let source = EmbedSource::from(frame.clone(), settings.size).expect("Reading frame failed");
+        let source = EmbedSource::from(frame.clone(), settings.size)
+            .expect("Reading frame failed");
 
         let frame_data = match out_mode {
             OutputMode::Color => read_color(&source, current_frame, 99999999, final_byte).unwrap(),
