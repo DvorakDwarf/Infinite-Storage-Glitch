@@ -43,7 +43,7 @@ Cd to `/target/release` directory and run the program `./isg_4real`.
 
 
 
-<b>The easier way (ARM only!):</b>
+<b>The easier way (ARM only! (will fix soon)):</b>
 1. Download the executable from the releases 
 2. Place the executable inside a folder
 3. Open terminal inside the directory
