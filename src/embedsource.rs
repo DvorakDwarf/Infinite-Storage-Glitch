@@ -1,5 +1,5 @@
 use opencv::core::prelude::*;
-use opencv::core::{Mat, CV_8UC3, Size};
+use opencv::core::{Mat, Size, CV_8UC3};
 
 //Putting width and height here potentially overkill, mostly here for convenience
 //I WANT THAT MAX PERFORMANCE
@@ -31,9 +31,9 @@ impl EmbedSource {
 
             EmbedSource {
                 image,
-                size, 
+                size,
                 frame_size,
-                actual_size
+                actual_size,
             }
         }
     }
@@ -50,9 +50,9 @@ impl EmbedSource {
 
         EmbedSource {
             image,
-            size, 
+            size,
             frame_size,
-            actual_size
+            actual_size,
         }
     }
 }

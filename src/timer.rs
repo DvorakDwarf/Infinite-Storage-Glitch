@@ -1,4 +1,3 @@
-use std::time::{self, Duration};
 use std::time::Instant;
 
 pub struct Timer {
@@ -16,16 +15,12 @@ impl Drop for Timer {
         } else {
             println!("{} ended in {}ms", self.title, millis);
         }
-        
     }
 }
 
 impl Timer {
     pub fn new(title: &'static str) -> Timer {
         let start = Instant::now();
-        Timer {
-            title,
-            time: start,
-        }
+        Timer { title, time: start }
     }
 }
