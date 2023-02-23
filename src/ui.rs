@@ -130,7 +130,7 @@ async fn enrich_embed_params(mut args: EmbedParams) -> anyhow::Result<EmbedParam
         let fps = CustomType::<i32>::new("What fps should the video be at ?")
             .with_error_message("Please type a valid number")
             .with_help_message("Decreasing fps may decrease chance of compression. ~10fps works")
-            .with_default(30)
+            .with_default(10)
             .prompt()
             .expect("Invalid fps");
         args.fps = Some(fps);

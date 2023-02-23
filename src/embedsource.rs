@@ -15,14 +15,16 @@ impl EmbedSource {
         let actual_height = height - (height % size);
         let actual_size = Size::new(actual_width, actual_height);
 
-        let image = Mat::new_rows_cols(frame_size.height, frame_size.width, CV_8UC3)
+        unsafe {
+            let image = Mat::new_rows_cols(frame_size.height, frame_size.width, CV_8UC3)
             .expect("Failed to create new Mat");
 
-        EmbedSource {
-            image,
-            size,
-            frame_size,
-            actual_size,
+            EmbedSource {
+                image,
+                size,
+                frame_size,
+                actual_size,
+            }
         }
     }
 
