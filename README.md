@@ -30,12 +30,20 @@ You need to have installed:
 - [Rust](https://www.rust-lang.org/tools/install) 
 - [opencv](https://github.com/twistedfall/opencv-rust)
 
-If having any issues also try installing [ffmpeg](https://ffmpeg.org/).
+You might also need to install:
+- [ffmpeg](https://ffmpeg.org/)
+- libstdc++-12-dev for [Debian-Based distros](https://packages.debian.org/unstable/libstdc++-12-dev), [Fedora-Based distros](https://fedora.pkgs.org/36/fedora-x86_64/libstdc++-12.0.1-0.16.fc36.x86_64.rpm.html), [Arch-Based distros](https://archlinux.org/packages/core/x86_64/gcc-libs/)
+- [libssl-dev](https://github.com/openssl/openssl)
+
+
+If having any issues also try installing .
 
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
 Cd to `/target/release` directory and run the program `./isg_4real`.
 
-<b>The easier way:</b>
+
+
+<b>The easier way (ARM only! (will fix soon)):</b>
 1. Download the executable from the releases 
 2. Place the executable inside a folder
 3. Open terminal inside the directory
