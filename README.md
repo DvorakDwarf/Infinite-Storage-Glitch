@@ -24,7 +24,8 @@ I doubt there's a part of the TOS that says you can't upload videos that contain
 </details>
 
 # Installation
-**Recommended way (building from source):**\
+## The source way (building from source with manually installing dependencies)
+
 === *Please note: building from source takes **a lot of CPU and RAM** usage.* ===\
 You need to have installed:
 - [Rust](https://www.rust-lang.org/tools/install) 
@@ -35,7 +36,9 @@ If having any issues also try installing [ffmpeg](https://ffmpeg.org/).
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
 Cd to `/target/release` directory and run the program `./isg_4real`.
 
-<b>The easier way: (ARM only! (will fix soon))</b>
+
+## The easier way (Which probably won't work on your system)
+
 1. Download the executable from the releases 
 2. Place the executable inside a folder
 3. Open terminal inside the directory
@@ -45,6 +48,24 @@ Cd to `/target/release` directory and run the program `./isg_4real`.
 
 Note that the binary **is not an exe file**, it will not work on windows, try following the first method instead.\
 I might add an .exe if this somehow gets popular
+
+## The easiest way (Docker)
+
+1. Install [Docker](https://docs.docker.com/get-docker/) if you haven't already.
+2. Clone this repository
+3. Change into the repository `cd Infinite-Storage-Glitch`
+4. Run `docker build -t isg .` to build the docker image.
+5. Run `docker run -it --rm -v ${PWD}:/home/Infinite-Storage-Glitch isg cargo build --release` to build the project.
+
+That's it. You will find the executable in the `target/release` directory. 
+
+ℹ️ **Please Note:** The binary will be a linux ARM (working on it) executable, so you will need to run it in a linux environment.
+If you do not have a linux environment, you can use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) 
+or run it using the docker container called `isg` we just built:
+
+```bash
+docker run -it --rm -v ${PWD}:/home/Infinite-Storage-Glitch isg ./target/release/isg_4real
+```
 
 How to use
 -------------
