@@ -39,19 +39,6 @@ If having any issues also try installing:
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
 Cd to `/target/release` directory and run the program `./isg_4real`.
 
-
-## The easier way (Which probably won't work on your system)
-
-1. Download the executable from the releases 
-2. Place the executable inside a folder
-3. Open terminal inside the directory
-4. `chmod +x isg_4real`
-5. Run the executable: `./isg_4real`
-6. Enjoy!
-
-Note that the binary **is not an exe file**, it will not work on windows, try following the first method instead.\
-I might add an .exe if this somehow gets popular
-
 ## The easiest way (Docker)
 
 Trying to make anything work on other people's computers is a nightmare so I'll use docker from now on
