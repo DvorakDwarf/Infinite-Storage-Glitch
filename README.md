@@ -51,7 +51,7 @@ Trying to make anything work on other people's computers is a nightmare so I'll 
 
 That's it. You will find the executable in the `target/release` directory. 
 
-ℹ️ **Please Note:** The binary will be a linux ARM (working on it) executable, so you will need to run it in a linux environment.
+ℹ️ **Please Note:** The binary will be a linux executable, so you will need to run it in a linux environment.
 If you do not have a linux environment, you can use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) 
 or run it using the docker container called `isg` we just built:
 
