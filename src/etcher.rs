@@ -15,6 +15,12 @@ use crate::timer::Timer;
 pub fn rip_bytes(path: &str) -> anyhow::Result<Vec<u8>> {
     let byte_data = fs::read(path)?;
 
+    if byte_data.len() == 0 {
+        eprintln!(
+            "Empty files cannot be embedded! File names are not retained, so its pointless anyway"
+        );
+        std::process::exit(1);
+    }
     println!("Bytes ripped succesfully");
     println!("Byte length: {}", byte_data.len());
     return Ok(byte_data);
@@ -464,10 +470,6 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         }
         OutputMode::Binary => {
             let length = data.binary.len();
-            if length == 0 {
-                eprintln!("Empty files cannot be embedded! File names are not retained, so its pointless anyway");
-                std::process::exit(1);
-            }
             //UGLY
             //Required so that data is continuous between each thread
             let frame_size = (settings.width * settings.height) as usize;
