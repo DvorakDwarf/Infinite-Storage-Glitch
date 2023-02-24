@@ -24,7 +24,7 @@ I doubt there's a part of the TOS that says you can't upload videos that contain
 </details>
 
 # Installation
-## Painful way (building from source with manually installing dependencies)
+## The source way (building from source with manually installing dependencies)
 
 === *Please note: building from source takes **a lot of CPU and RAM** usage.* ===\
 You need to have installed:
@@ -35,6 +35,7 @@ If having any issues also try installing [ffmpeg](https://ffmpeg.org/).
 
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
 Cd to `/target/release` directory and run the program `./isg_4real`.
+
 
 ## The easier way (Which probably won't work on your system)
 
@@ -58,7 +59,7 @@ I might add an .exe if this somehow gets popular
 
 That's it. You will find the executable in the `target/release` directory. 
 
-ℹ️ **Please Note:** The binary will be a linux executable, so you will need to run it in a linux environment.
+ℹ️ **Please Note:** The binary will be a linux ARM (working on it) executable, so you will need to run it in a linux environment.
 If you do not have a linux environment, you can use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) 
 or run it using the docker container called `isg` we just built:
 
