@@ -1,6 +1,6 @@
 #### I was working on this instead of my finals, hope you appreciate it.
 
-I'll add all relevant executables when I can
+Treat this less like the next dropbox and more like a "party trick" or a set of techniques to pass data through compression. I do not endorse high volume use of this tool
 
 # Infinite-Storage-Glitch
 
