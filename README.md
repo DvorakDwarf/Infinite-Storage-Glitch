@@ -31,7 +31,10 @@ You need to have installed:
 - [Rust](https://www.rust-lang.org/tools/install) 
 - [opencv](https://github.com/twistedfall/opencv-rust)
 
-If having any issues also try installing [ffmpeg](https://ffmpeg.org/).
+If having any issues also try installing:
+- [ffmpeg](https://ffmpeg.org/)
+- [clang](https://clang.llvm.org/)
+- [qt](https://github.com/qt)
 
 If you want to or already have went through the hassle of installing Rust, you can ```git clone``` this repository, then ```cargo build --release```.
 Cd to `/target/release` directory and run the program `./isg_4real`.
