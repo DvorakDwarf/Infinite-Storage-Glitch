@@ -559,7 +559,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     //Could probably avoid cloning
     video.read(&mut frame)?;
     let instruction_source =
-        EmbedSource::from(frame.clone(), instruction_size).expect("Couldn't create instructions");
+        EmbedSource::from(frame.clone(), instruction_size, true).expect("Couldn't create instructions");
     let (out_mode, final_frame, final_byte, settings) =
         read_instructions(&instruction_source, threads)?;
 
@@ -578,7 +578,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
             println!("On frame: {}", current_frame);
         }
 
-        let source = EmbedSource::from(frame.clone(), settings.size).expect("Reading frame failed");
+        let source = EmbedSource::from(frame.clone(), settings.size, false).expect("Reading frame failed");
 
         let frame_data = match out_mode {
             OutputMode::Color => read_color(&source, current_frame, 99999999, final_byte).unwrap(),

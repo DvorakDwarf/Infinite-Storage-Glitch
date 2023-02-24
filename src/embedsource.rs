@@ -28,13 +28,13 @@ impl EmbedSource {
         }
     }
 
-    pub fn from(image: Mat, size: i32) -> Result<EmbedSource, String> {
+    pub fn from(image: Mat, size: i32, instruction: bool) -> Result<EmbedSource, String> {
         let width = image.cols();
         let height = image.rows();
         let frame_size = Size::new(width, height);
-
+        
         //Some malevolent spirit breaks data when height is not divisible
-        if height % size != 0 {
+        if height % size != 0 && !(instruction) {
             return Err("Image size is not a multiple of the embedding size".to_string());
         }
 
