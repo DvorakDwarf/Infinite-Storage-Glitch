@@ -1,6 +1,6 @@
 use std::{fs, thread, vec};
 
-use anyhow::Error; //anyhow::Error::msg("My err");
+use anyhow::{anyhow, Error}; //anyhow::Error::msg("My err");
 
 use opencv::core::Mat;
 use opencv::prelude::*;
@@ -15,11 +15,10 @@ use crate::timer::Timer;
 pub fn rip_bytes(path: &str) -> anyhow::Result<Vec<u8>> {
     let byte_data = fs::read(path)?;
 
-    if byte_data.len() == 0 {
-        eprintln!(
-            "Empty files cannot be embedded! File names are not retained, so its pointless anyway"
-        );
-        std::process::exit(1);
+    if byte_data.is_empty() {
+        return Err(anyhow!(
+            "Empty files cannot be embedded! File names are not retained, so it's pointless anyway"
+        ));
     }
     println!("Bytes ripped succesfully");
     println!("Byte length: {}", byte_data.len());
