@@ -1,7 +1,6 @@
 use std::{fs, thread, vec};
 
-use anyhow;
-use anyhow::Error; //anyhow::Error::msg("My err");
+use anyhow::{anyhow, Error}; //anyhow::Error::msg("My err");
 
 use opencv::core::Mat;
 use opencv::prelude::*;
@@ -16,6 +15,11 @@ use crate::timer::Timer;
 pub fn rip_bytes(path: &str) -> anyhow::Result<Vec<u8>> {
     let byte_data = fs::read(path)?;
 
+    if byte_data.is_empty() {
+        return Err(anyhow!(
+            "Empty files cannot be embedded! File names are not retained, so it's pointless anyway"
+        ));
+    }
     println!("Bytes ripped succesfully");
     println!("Byte length: {}", byte_data.len());
     return Ok(byte_data);
@@ -465,7 +469,6 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         }
         OutputMode::Binary => {
             let length = data.binary.len();
-
             //UGLY
             //Required so that data is continuous between each thread
             let frame_size = (settings.width * settings.height) as usize;
@@ -550,14 +553,13 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     let _timer = Timer::new("Dislodging frame");
     let instruction_size = 5;
 
-    let mut video = VideoCapture::from_file(&path, CAP_ANY)
-        .expect("Could not open video path");
+    let mut video = VideoCapture::from_file(&path, CAP_ANY).expect("Could not open video path");
     let mut frame = Mat::default();
 
     //Could probably avoid cloning
     video.read(&mut frame)?;
-    let instruction_source = EmbedSource::from(frame.clone(), instruction_size)
-        .expect("Couldn't create instructions");
+    let instruction_source =
+        EmbedSource::from(frame.clone(), instruction_size).expect("Couldn't create instructions");
     let (out_mode, final_frame, final_byte, settings) =
         read_instructions(&instruction_source, threads)?;
 
@@ -576,8 +578,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
             println!("On frame: {}", current_frame);
         }
 
-        let source = EmbedSource::from(frame.clone(), settings.size)
-            .expect("Reading frame failed");
+        let source = EmbedSource::from(frame.clone(), settings.size).expect("Reading frame failed");
 
         let frame_data = match out_mode {
             OutputMode::Color => read_color(&source, current_frame, 99999999, final_byte).unwrap(),
