@@ -46,7 +46,7 @@ pub fn rip_binary(byte_data: Vec<u8>) -> anyhow::Result<Vec<bool>> {
             }
         }
     }
-    println!("Binary ripped succesfully");
+    println!("Binary ripped successfully");
     // println!("Binary length: {}", binary_data.len());
     return Ok(binary_data);
 }
@@ -114,7 +114,7 @@ fn translate_u32(binary_data: Vec<bool>) -> anyhow::Result<Vec<u32>> {
 
 pub fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
     fs::write(path, data)?;
-    println!("File written succesfully");
+    println!("File written successfully");
     return Ok(());
 }
 
@@ -593,7 +593,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
         byte_data.extend(frame_data);
     }
 
-    println!("Video read succesfully");
+    println!("Video read successfully");
     return Ok(byte_data);
 }
 

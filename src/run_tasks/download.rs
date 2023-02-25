@@ -16,7 +16,7 @@ pub async fn run_download(args: DownloadParams) -> anyhow::Result<()> {
     let _video = output.into_single_video().unwrap();
     // let title = video.title;
 
-    println!("Video downloaded succesfully");
+    println!("Video downloaded successfully");
 
     return Ok(());
 }
