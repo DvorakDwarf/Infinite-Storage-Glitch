@@ -12,7 +12,6 @@ RUN apt-get install -y ffmpeg
 RUN apt-get install -y build-essential
 RUN apt-get install -y libssl-dev
 RUN apt-get install -y clang libclang-dev
-RUN apt-get install -y yt-dlp 
 
 # Install Rust
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
