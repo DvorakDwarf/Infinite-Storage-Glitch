@@ -1,7 +1,6 @@
 use std::{fs, thread, vec};
 
-use anyhow;
-use anyhow::Error; //anyhow::Error::msg("My err");
+use anyhow::{anyhow, Error}; //anyhow::Error::msg("My err");
 
 use opencv::core::Mat;
 use opencv::prelude::*;
@@ -16,6 +15,11 @@ use crate::timer::Timer;
 pub fn rip_bytes(path: &str) -> anyhow::Result<Vec<u8>> {
     let byte_data = fs::read(path)?;
 
+    if byte_data.is_empty() {
+        return Err(anyhow!(
+            "Empty files cannot be embedded! File names are not retained, so it's pointless anyway"
+        ));
+    }
     println!("Bytes ripped succesfully");
     println!("Byte length: {}", byte_data.len());
     return Ok(byte_data);
@@ -42,7 +46,7 @@ pub fn rip_binary(byte_data: Vec<u8>) -> anyhow::Result<Vec<bool>> {
             }
         }
     }
-    println!("Binary ripped succesfully");
+    println!("Binary ripped successfully");
     // println!("Binary length: {}", binary_data.len());
     return Ok(binary_data);
 }
@@ -110,7 +114,7 @@ fn translate_u32(binary_data: Vec<bool>) -> anyhow::Result<Vec<u32>> {
 
 pub fn write_bytes(path: &str, data: Vec<u8>) -> anyhow::Result<()> {
     fs::write(path, data)?;
-    println!("File written succesfully");
+    println!("File written successfully");
     return Ok(());
 }
 
@@ -465,7 +469,6 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
         }
         OutputMode::Binary => {
             let length = data.binary.len();
-
             //UGLY
             //Required so that data is continuous between each thread
             let frame_size = (settings.width * settings.height) as usize;
@@ -541,7 +544,7 @@ pub fn etch(path: &str, data: Data, settings: Settings) -> anyhow::Result<()> {
     }
     video.release()?;
 
-    println!("Video embedded succesfully at {}", path);
+    println!("Video embedded successfully at {}", path);
 
     return Ok(());
 }
@@ -550,14 +553,13 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
     let _timer = Timer::new("Dislodging frame");
     let instruction_size = 5;
 
-    let mut video = VideoCapture::from_file(&path, CAP_ANY)
-        .expect("Could not open video path");
+    let mut video = VideoCapture::from_file(&path, CAP_ANY).expect("Could not open video path");
     let mut frame = Mat::default();
 
     //Could probably avoid cloning
     video.read(&mut frame)?;
-    let instruction_source = EmbedSource::from(frame.clone(), instruction_size)
-        .expect("Couldn't create instructions");
+    let instruction_source =
+        EmbedSource::from(frame.clone(), instruction_size, true).expect("Couldn't create instructions");
     let (out_mode, final_frame, final_byte, settings) =
         read_instructions(&instruction_source, threads)?;
 
@@ -576,8 +578,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
             println!("On frame: {}", current_frame);
         }
 
-        let source = EmbedSource::from(frame.clone(), settings.size)
-            .expect("Reading frame failed");
+        let source = EmbedSource::from(frame.clone(), settings.size, false).expect("Reading frame failed");
 
         let frame_data = match out_mode {
             OutputMode::Color => read_color(&source, current_frame, 99999999, final_byte).unwrap(),
@@ -592,7 +593,7 @@ pub fn read(path: &str, threads: usize) -> anyhow::Result<Vec<u8>> {
         byte_data.extend(frame_data);
     }
 
-    println!("Video read succesfully");
+    println!("Video read successfully");
     return Ok(byte_data);
 }
 
