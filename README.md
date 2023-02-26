@@ -51,11 +51,13 @@ That's it. You will find the executable in the `target/release` directory.
 
 ℹ️ **Please Note:** The binary will be a linux executable, so you will need to run it in a linux environment.
 If you do not have a linux environment, you can use [WSL](https://docs.microsoft.com/en-us/windows/wsl/install-win10) 
-or run it using the docker container called `isg` we just built:
+or run it using the docker container called `isg` we just built **using a Linux shell or PowerShell**:
 
 ```bash
 docker run -it --rm -v ${PWD}:/home/Infinite-Storage-Glitch isg ./target/release/isg_4real
 ```
+
+**Note:** If you are using `cmd` on Windows, you will need to use `%cd%` instead of `${PWD}`.
 
 How to use
 -------------
