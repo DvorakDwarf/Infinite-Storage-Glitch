@@ -146,20 +146,6 @@ async fn enrich_embed_params(mut args: EmbedParams) -> anyhow::Result<EmbedParam
             .unwrap();
         args.resolution = Some(resolution.to_string());
     }
-    // Now, make sure that the resolution string does not contain a "p".
-    // The unwrap is safe because it's being run either when we skipped the if,
-    // or after executing it, and both leave resolution as Some
-    args.resolution = Some(
-        match args.resolution.unwrap().as_str() {
-            "144p" => "144",
-            "240p" => "240",
-            "360p" => "360",
-            "480p" => "480",
-            "720p" => "720",
-            _ => "360",
-        }
-        .to_string(),
-    );
 
     Ok(args)
 }

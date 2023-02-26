@@ -18,7 +18,7 @@ pub enum Commands {
 
 /// This encodes the specific params for embedding.
 /// All values are optional, and will be substituted in using UI if missing.
-#[derive(Args, Default)]
+#[derive(Args, Default, Debug)]
 pub struct EmbedParams {
     #[arg(short, long)]
     /// Path to the file with the data to encode
