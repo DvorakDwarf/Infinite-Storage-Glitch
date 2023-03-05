@@ -4,6 +4,8 @@ Treat this less like the next dropbox and more like a "party trick" or a set of 
 
 Some dude sent me email saying he has a patent on the idea of storing data on YT. It sounded extremely phishy and I could not find the patent on USPTO. If you have evidence I'll shut it down.
 
+Oh and if Youtube sends me a Cease and Desist I'll gladly shut it down too.
+
 # Infinite-Storage-Glitch
 
 ![ezgif com-gif-maker](https://user-images.githubusercontent.com/96934612/219563410-7728447d-5482-41ae-a3ff-cf8446e16ab7.gif)
