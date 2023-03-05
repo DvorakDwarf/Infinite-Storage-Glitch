@@ -1,0 +1,56 @@
+After-project ideas:
+    Fix
+    Code clean-up
+    Optimize (Find optimization tool)
+    Encryption (Kind of unnecessary given archive passwords)
+    Fix weird bug
+
+Benchmark notes (Tested on an M1 macbook):
+
+Embed speed:
+450 kb/s average, 4x size, optimal resistance
+350 kb/s average, 11x-12x size, paranoid resistance
+31.9 mb/s average, 1x size, maximum efficiency
+(A lot of this time is just creating the file after the frames are made)
+
+~8.5ms per frame, optimal resistance
+~5.8ms per frame, paranoid resistance
+~0.16ms per frame, maximum efficiency
+
+Probably faster on paranoid because it has to read less ?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Fix the weird bug (GIVED UP, DO LATER)
+    Make blocks start from top right corner (Gives me even sizes)
+    make it so differentiates between regular, 16:9 size and actual size
+    Embedding or reading an imperfect causes bugs
+    Not sure if a problem of embedding or reading
+    Might be get_pixel
+    It's not overlapping, I'm sure
+    I noticed that every second frame seems broken
+    It stops me from using anything other than 360p/720p
+    Might have something built in
+    Might be the length of file written in instructions
