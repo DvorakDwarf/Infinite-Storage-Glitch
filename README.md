@@ -41,7 +41,8 @@ Cd to `/target/release` directory and run the program `./isg_4real`.
 
 ## The easiest way (Docker)
 
-Trying to make anything work on other people's computers is a nightmare so I'll use docker from now on
+Trying to make anything work on other people's computers is a nightmare so I'll use docker from now on \
+[Trend Oceans](https://trendoceans.com/isg-lets-you-use-youtube-as-cloud-storage-for-any-files-not-just-video/) wrote a neat article on how to use this method as well.
 
 1. Install [Docker](https://docs.docker.com/get-docker/) if you haven't already.
 2. Clone this repository
